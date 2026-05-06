@@ -18,6 +18,10 @@
   --rest-bg: #f0f5ff;
   --idle-from: #a8edca;
   --idle-to: #fed6e3;
+  --sit-from: #f9ca24;
+  --sit-to: #f0932b;
+  --sit-text: #e55a00;
+  --sit-bg: #fffbf0;
   --bg: #fafafa;
   --card: #ffffff;
   --text: #2d2d3a;
@@ -44,6 +48,7 @@ body {
 
 body.active-phase { background: var(--active-bg); }
 body.rest-phase { background: var(--rest-bg); }
+body.sit-phase { background: var(--sit-bg); }
 
 /* 배경 블롭 */
 .blob {
@@ -144,6 +149,9 @@ body.active-phase .phase-card::before {
 body.rest-phase .phase-card::before {
   background: linear-gradient(90deg, var(--rest-from), var(--rest-to));
 }
+body.sit-phase .phase-card::before {
+  background: linear-gradient(90deg, var(--sit-from), var(--sit-to));
+}
 
 /* 페이즈 뱃지 */
 .phase-badge {
@@ -166,6 +174,10 @@ body.active-phase .phase-badge {
 body.rest-phase .phase-badge {
   background: linear-gradient(135deg, #ebf3ff, #ede8ff);
   color: var(--rest-text);
+}
+body.sit-phase .phase-badge {
+  background: linear-gradient(135deg, #fff8e1, #ffe9c8);
+  color: var(--sit-text);
 }
 .phase-dot {
   width: 8px; height: 8px;
@@ -225,6 +237,7 @@ body.rest-phase .phase-dot {
 }
 body.active-phase .time-display { color: var(--active-text); }
 body.rest-phase .time-display { color: var(--rest-text); }
+body.sit-phase .time-display { color: var(--sit-text); }
 
 .time-label {
   font-size: 12px;
@@ -269,6 +282,22 @@ body.rest-phase .time-display { color: var(--rest-text); }
 }
 .btn:active { transform: scale(0.96); }
 
+.btn-sit {
+  flex: 1;
+  padding: 14px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, #fff8e1, #ffe9c8);
+  color: var(--sit-text);
+  border: 1.5px solid #f0932b;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: all 0.2s;
+  box-shadow: 0 2px 10px rgba(240,147,43,0.2);
+}
+.btn-sit:active { transform: scale(0.96); }
+
 .btn-test {
   width: 100%;
   padding: 12px;
@@ -300,6 +329,11 @@ body.rest-phase .btn-primary {
   background: linear-gradient(135deg, var(--rest-from), var(--rest-to));
   color: white;
   box-shadow: 0 4px 20px rgba(91,127,255,0.35);
+}
+body.sit-phase .btn-primary {
+  background: linear-gradient(135deg, var(--sit-from), var(--sit-to));
+  color: white;
+  box-shadow: 0 4px 20px rgba(240,147,43,0.35);
 }
 
 .btn-secondary {
@@ -559,6 +593,10 @@ body.rest-phase .btn-primary {
             <stop offset="0%" stop-color="#a8edca"/>
             <stop offset="100%" stop-color="#fed6e3"/>
           </linearGradient>
+          <linearGradient id="sitGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#f9ca24"/>
+            <stop offset="100%" stop-color="#f0932b"/>
+          </linearGradient>
         </defs>
         <circle class="ring-track" cx="110" cy="110" r="100"/>
         <circle class="ring-progress" id="ringProgress" cx="110" cy="110" r="100"/>
@@ -576,6 +614,9 @@ body.rest-phase .btn-primary {
     <div class="btn-group">
       <button class="btn btn-primary" id="mainBtn" onclick="handleMainBtn()">시작하기 💪</button>
       <button class="btn btn-secondary" onclick="handleReset()">초기화</button>
+    </div>
+    <div class="btn-group" style="margin-top:-8px">
+      <button class="btn btn-sit" id="sitBtn">🪑 앉기 시작</button>
     </div>
     <button class="btn btn-test" id="testBtn">⚡ 5초 테스트</button>
   </div>
@@ -641,6 +682,18 @@ body.rest-phase .btn-primary {
 
     <div class="settings-row">
       <div>
+        <div class="settings-label">🪑 앉기 시간</div>
+        <div class="settings-sub"><span id="sitValLabel">30</span>분</div>
+      </div>
+      <div class="stepper">
+        <button class="stepper-btn" onclick="changeTime('sit',-5)">−</button>
+        <div class="stepper-val" id="sitVal">30</div>
+        <button class="stepper-btn" onclick="changeTime('sit',5)">+</button>
+      </div>
+    </div>
+
+    <div class="settings-row">
+      <div>
         <div class="settings-label">🔔 소리 알림</div>
         <div class="settings-sub">페이즈 전환 시</div>
       </div>
@@ -681,7 +734,8 @@ let S = {
   activeMins: 20,
   restMins: 60,
   _next: null,
-  endTime: null, // 타이머 종료 예정 시각 (timestamp)
+  endTime: null,
+  sitMins: 30, // 앉기 제한 시간
 };
 
 // 오디오
@@ -711,13 +765,11 @@ function vib(p) { if(S.vibrateOn && navigator.vibrate) navigator.vibrate(p); }
 // 그라디언트 업데이트
 function updateGrad() {
   const el = document.getElementById('ringProgress');
-  if (S.phase==='active' || (S.phase==='paused' && S.pausedFrom==='active')) {
-    el.setAttribute('stroke','url(#activeGrad)');
-  } else if (S.phase==='rest' || (S.phase==='paused' && S.pausedFrom==='rest')) {
-    el.setAttribute('stroke','url(#restGrad)');
-  } else {
-    el.setAttribute('stroke','url(#idleGrad)');
-  }
+  const p = S.phase === 'paused' ? S.pausedFrom : S.phase;
+  if (p==='active') el.setAttribute('stroke','url(#activeGrad)');
+  else if (p==='rest') el.setAttribute('stroke','url(#restGrad)');
+  else if (p==='sit') el.setAttribute('stroke','url(#sitGrad)');
+  else el.setAttribute('stroke','url(#idleGrad)');
 }
 
 function startActive() {
@@ -746,6 +798,19 @@ function startRest() {
   saveState();
 }
 
+function startSit() {
+  S.phase = 'sit';
+  S.remaining = S.sitMins * 60;
+  document.body.className = 'sit-phase';
+  document.getElementById('phaseText').textContent = '🪑 앉아있는 중';
+  document.getElementById('timeLabel').textContent = '앉기 시간';
+  document.getElementById('mainBtn').textContent = '일시정지 ⏸';
+  document.getElementById('nextHint').innerHTML = `<span>완료 후 → 🛌 ${S.restMins}분 누움 권장</span>`;
+  updateGrad();
+  tick();
+  saveState();
+}
+
 function tick() {
   clearInterval(S.timer);
   // 종료 시각 기록 (백그라운드 복귀 시 정확한 시간 계산용)
@@ -769,7 +834,7 @@ function saveState() {
       remaining: S.remaining, endTime: S.endTime,
       cyclesActive: S.cyclesActive, cyclesRest: S.cyclesRest,
       soundOn: S.soundOn, vibrateOn: S.vibrateOn,
-      activeMins: S.activeMins, restMins: S.restMins, _next: S._next,
+      activeMins: S.activeMins, restMins: S.restMins, sitMins: S.sitMins, _next: S._next,
     }));
   } catch(e){}
 }
@@ -787,6 +852,7 @@ function loadState() {
     S.vibrateOn = v.vibrateOn!==false;
     S.activeMins = v.activeMins||20;
     S.restMins = v.restMins||60;
+    S.sitMins = v.sitMins||30;
     S._next = v._next||null;
     S.endTime = v.endTime||null;
 
@@ -813,6 +879,13 @@ function loadState() {
           document.getElementById('timeLabel').textContent='활동 시간';
           document.getElementById('mainBtn').textContent='일시정지 ⏸';
           document.getElementById('nextHint').innerHTML=`<span>완료 후 → 😴 ${S.restMins}분 휴식</span>`;
+        } else if (v.phase==='sit') {
+          S.phase='sit';
+          document.body.className='sit-phase';
+          document.getElementById('phaseText').textContent='🪑 앉아있는 중';
+          document.getElementById('timeLabel').textContent='앉기 시간';
+          document.getElementById('mainBtn').textContent='일시정지 ⏸';
+          document.getElementById('nextHint').innerHTML=`<span>완료 후 → 🛌 ${S.restMins}분 누움 권장</span>`;
         } else {
           S.phase='rest';
           document.body.className='rest-phase';
@@ -898,8 +971,8 @@ function updateDisplay() {
   const s = (S.remaining%60).toString().padStart(2,'0');
   document.getElementById('timeDisplay').textContent = `${m}:${s}`;
 
-  const total = (S.phase==='active'||(S.phase==='paused'&&S.pausedFrom==='active'))
-    ? S.activeMins*60 : S.restMins*60;
+  const p = S.phase==='paused' ? S.pausedFrom : S.phase;
+  const total = p==='active' ? S.activeMins*60 : p==='sit' ? S.sitMins*60 : S.restMins*60;
   const elapsed = total - S.remaining;
   const progress = total>0 ? elapsed/total : 0;
   const offset = CIRC*(1-progress);
@@ -913,9 +986,8 @@ function handleMainBtn() {
     // _next는 dismissOverlay에서 이미 초기화됨
     // idle 상태에서 시작 버튼 = 항상 활동 시작
     startActive();
-  } else if (S.phase==='active'||S.phase==='rest') {
+  } else if (S.phase==='active'||S.phase==='rest'||S.phase==='sit') {
     clearInterval(S.timer);
-    // 일시정지 시 실제 남은 시간 정확히 저장
     S.remaining = Math.max(0, Math.round((S.endTime - Date.now()) / 1000));
     S.pausedFrom = S.phase;
     S.phase = 'paused';
@@ -926,9 +998,13 @@ function handleMainBtn() {
     saveState();
   } else if (S.phase==='paused') {
     S.phase = S.pausedFrom;
-    document.body.className = S.phase==='active' ? 'active-phase' : 'rest-phase';
+    if (S.phase==='active') document.body.className = 'active-phase';
+    else if (S.phase==='rest') document.body.className = 'rest-phase';
+    else if (S.phase==='sit') document.body.className = 'sit-phase';
     document.getElementById('mainBtn').textContent = '일시정지 ⏸';
-    document.getElementById('phaseText').textContent = S.phase==='active' ? '🏃 활동 중' : '😴 휴식 중';
+    if (S.phase==='active') document.getElementById('phaseText').textContent = '🏃 활동 중';
+    else if (S.phase==='rest') document.getElementById('phaseText').textContent = '😴 휴식 중';
+    else if (S.phase==='sit') document.getElementById('phaseText').textContent = '🪑 앉아있는 중';
     updateGrad();
     tick();
     saveState();
@@ -989,6 +1065,10 @@ function changeTime(type, delta) {
       S.remaining = S.activeMins*60;
       document.getElementById('timeDisplay').textContent = `${String(S.activeMins).padStart(2,'0')}:00`;
     }
+  } else if (type==='sit') {
+    S.sitMins = Math.max(5, Math.min(60, S.sitMins+delta));
+    document.getElementById('sitVal').textContent = S.sitMins;
+    document.getElementById('sitValLabel').textContent = S.sitMins;
   } else {
     S.restMins = Math.max(10, Math.min(120, S.restMins+delta));
     document.getElementById('restVal').textContent = S.restMins;
@@ -1091,6 +1171,30 @@ function restoreTestMode() {
   document.getElementById('restVal').textContent = S.restMins;
   document.getElementById('restValLabel').textContent = S.restMins;
 }
+
+// 앉기 버튼 이벤트
+document.getElementById('sitBtn').addEventListener('click', function() {
+  if (S.phase === 'idle') {
+    startSit();
+  } else if (S.phase === 'active' || S.phase === 'rest' || S.phase === 'sit') {
+    // 진행 중엔 앉기로 전환
+    clearInterval(S.timer);
+    S.phase = 'idle';
+    document.body.className = '';
+    startSit();
+  }
+});
+document.getElementById('sitBtn').addEventListener('touchend', function(e) {
+  e.preventDefault();
+  if (S.phase === 'idle') {
+    startSit();
+  } else if (S.phase === 'active' || S.phase === 'rest' || S.phase === 'sit') {
+    clearInterval(S.timer);
+    S.phase = 'idle';
+    document.body.className = '';
+    startSit();
+  }
+}, { passive: false });
 
 // 설정 버튼 이벤트 (안드로이드 onclick 미작동 대비)
 document.getElementById('settingsBtn').addEventListener('click', toggleSettings);
