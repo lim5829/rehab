@@ -783,6 +783,7 @@ function startActive() {
   updateGrad();
   tick();
   saveState();
+  updateSitBtn();
 }
 
 function startRest() {
@@ -796,6 +797,7 @@ function startRest() {
   updateGrad();
   tick();
   saveState();
+  updateSitBtn();
 }
 
 function startSit() {
@@ -809,6 +811,7 @@ function startSit() {
   updateGrad();
   tick();
   saveState();
+  updateSitBtn();
 }
 
 function tick() {
@@ -964,6 +967,7 @@ function phaseComplete() {
   document.getElementById('phaseText').textContent = '완료 ✨';
   updateGrad();
   saveState();
+  updateSitBtn();
 }
 
 function updateDisplay() {
@@ -996,6 +1000,7 @@ function handleMainBtn() {
     document.body.className = '';
     updateGrad();
     saveState();
+    updateSitBtn();
   } else if (S.phase==='paused') {
     S.phase = S.pausedFrom;
     if (S.phase==='active') document.body.className = 'active-phase';
@@ -1008,6 +1013,7 @@ function handleMainBtn() {
     updateGrad();
     tick();
     saveState();
+    updateSitBtn();
   }
 }
 
@@ -1172,28 +1178,65 @@ function restoreTestMode() {
   document.getElementById('restValLabel').textContent = S.restMins;
 }
 
-// 앉기 버튼 이벤트
-document.getElementById('sitBtn').addEventListener('click', function() {
-  if (S.phase === 'idle') {
-    startSit();
-  } else if (S.phase === 'active' || S.phase === 'rest' || S.phase === 'sit') {
-    // 진행 중엔 앉기로 전환
+// 앉기/일어나기 버튼
+function handleSitBtn() {
+  if (S.phase === 'sit') {
+    // 앉다가 일어남 → 활동 타이머로 전환
+    clearInterval(S.timer);
+    S.phase = 'idle';
+    document.body.className = '';
+    startActive();
+  } else if (S.phase === 'paused' && S.pausedFrom === 'sit') {
+    // 앉기 일시정지 중 → 일어남
+    clearInterval(S.timer);
+    S.phase = 'idle';
+    document.body.className = '';
+    startActive();
+  } else if (S.phase === 'active') {
+    // 활동 중 앉음 → 앉기 타이머로 전환
     clearInterval(S.timer);
     S.phase = 'idle';
     document.body.className = '';
     startSit();
+  } else {
+    // idle, rest 상태 → 앉기 시작
+    if (S.phase === 'rest') {
+      clearInterval(S.timer);
+      S.phase = 'idle';
+      document.body.className = '';
+    }
+    startSit();
   }
-});
+  updateSitBtn();
+}
+
+function updateSitBtn() {
+  const btn = document.getElementById('sitBtn');
+  if (S.phase === 'sit' || (S.phase === 'paused' && S.pausedFrom === 'sit')) {
+    btn.textContent = '🏃 일어나기';
+    btn.style.background = 'linear-gradient(135deg, #e8f5e9, #c8e6c9)';
+    btn.style.borderColor = '#66bb6a';
+    btn.style.color = '#2e7d32';
+    btn.style.boxShadow = '0 2px 10px rgba(102,187,106,0.3)';
+  } else if (S.phase === 'active' || (S.phase === 'paused' && S.pausedFrom === 'active')) {
+    btn.textContent = '🪑 앉기';
+    btn.style.background = 'linear-gradient(135deg, #fff8e1, #ffe9c8)';
+    btn.style.borderColor = '#f0932b';
+    btn.style.color = '#e55a00';
+    btn.style.boxShadow = '0 2px 10px rgba(240,147,43,0.2)';
+  } else {
+    btn.textContent = '🪑 앉기 시작';
+    btn.style.background = 'linear-gradient(135deg, #fff8e1, #ffe9c8)';
+    btn.style.borderColor = '#f0932b';
+    btn.style.color = '#e55a00';
+    btn.style.boxShadow = '0 2px 10px rgba(240,147,43,0.2)';
+  }
+}
+
+document.getElementById('sitBtn').addEventListener('click', handleSitBtn);
 document.getElementById('sitBtn').addEventListener('touchend', function(e) {
   e.preventDefault();
-  if (S.phase === 'idle') {
-    startSit();
-  } else if (S.phase === 'active' || S.phase === 'rest' || S.phase === 'sit') {
-    clearInterval(S.timer);
-    S.phase = 'idle';
-    document.body.className = '';
-    startSit();
-  }
+  handleSitBtn();
 }, { passive: false });
 
 // 설정 버튼 이벤트 (안드로이드 onclick 미작동 대비)
@@ -1204,6 +1247,7 @@ document.getElementById('settingsBtn').addEventListener('touchend', function(e) 
 }, { passive: false });
 
 // 초기화 — 저장된 상태 복원
+// (updateSitBtn은 loadState 후 호출)
 const ring = document.getElementById('ringProgress');
 ring.style.strokeDasharray = CIRC;
 ring.style.strokeDashoffset = 0;
@@ -1213,6 +1257,7 @@ if (S.phase === 'idle') {
   document.getElementById('timeDisplay').textContent = `${String(S.activeMins).padStart(2,'0')}:00`;
   updateStats();
 }
+updateSitBtn();
 </script>
 </body>
 </html>
