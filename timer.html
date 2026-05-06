@@ -282,6 +282,22 @@ body.sit-phase .time-display { color: var(--sit-text); }
 }
 .btn:active { transform: scale(0.96); }
 
+.btn-finish {
+  flex: 1.5;
+  padding: 16px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+  color: #2e7d32;
+  border: 1.5px solid #66bb6a;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: all 0.2s;
+  box-shadow: 0 2px 10px rgba(102,187,106,0.3);
+}
+.btn-finish:active { transform: scale(0.96); }
+
 .btn-sit {
   flex: 1;
   padding: 14px;
@@ -613,6 +629,7 @@ body.sit-phase .btn-primary {
 
     <div class="btn-group">
       <button class="btn btn-primary" id="mainBtn" onclick="handleMainBtn()">시작하기 💪</button>
+      <button class="btn btn-finish" id="finishBtn" style="display:none">✅ 활동완료</button>
       <button class="btn btn-secondary" onclick="handleReset()">초기화</button>
     </div>
     <div class="btn-group" style="margin-top:-8px">
@@ -784,6 +801,7 @@ function startActive() {
   tick();
   saveState();
   updateSitBtn();
+  updateFinishBtn();
 }
 
 function startRest() {
@@ -798,6 +816,7 @@ function startRest() {
   tick();
   saveState();
   updateSitBtn();
+  updateFinishBtn();
 }
 
 function startSit() {
@@ -812,6 +831,7 @@ function startSit() {
   tick();
   saveState();
   updateSitBtn();
+  updateFinishBtn();
 }
 
 function tick() {
@@ -968,6 +988,7 @@ function phaseComplete() {
   updateGrad();
   saveState();
   updateSitBtn();
+  updateFinishBtn();
 }
 
 function updateDisplay() {
@@ -1001,6 +1022,7 @@ function handleMainBtn() {
     updateGrad();
     saveState();
     updateSitBtn();
+  updateFinishBtn();
   } else if (S.phase==='paused') {
     S.phase = S.pausedFrom;
     if (S.phase==='active') document.body.className = 'active-phase';
@@ -1014,6 +1036,7 @@ function handleMainBtn() {
     tick();
     saveState();
     updateSitBtn();
+  updateFinishBtn();
   }
 }
 
@@ -1208,6 +1231,16 @@ function handleSitBtn() {
     startSit();
   }
   updateSitBtn();
+  updateFinishBtn();
+}
+
+function updateFinishBtn() {
+  const btn = document.getElementById('finishBtn');
+  if (S.phase === 'active') {
+    btn.style.display = 'block';
+  } else {
+    btn.style.display = 'none';
+  }
 }
 
 function updateSitBtn() {
@@ -1232,6 +1265,23 @@ function updateSitBtn() {
     btn.style.boxShadow = '0 2px 10px rgba(240,147,43,0.2)';
   }
 }
+
+// 활동완료 버튼
+document.getElementById('finishBtn').addEventListener('click', function() {
+  if (S.phase !== 'active') return;
+  clearInterval(S.timer);
+  S.remaining = 0;
+  phaseComplete();
+  updateFinishBtn();
+});
+document.getElementById('finishBtn').addEventListener('touchend', function(e) {
+  e.preventDefault();
+  if (S.phase !== 'active') return;
+  clearInterval(S.timer);
+  S.remaining = 0;
+  phaseComplete();
+  updateFinishBtn();
+}, { passive: false });
 
 document.getElementById('sitBtn').addEventListener('click', handleSitBtn);
 document.getElementById('sitBtn').addEventListener('touchend', function(e) {
@@ -1258,6 +1308,7 @@ if (S.phase === 'idle') {
   updateStats();
 }
 updateSitBtn();
+  updateFinishBtn();
 </script>
 </body>
 </html>
