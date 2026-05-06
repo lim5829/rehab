@@ -100,17 +100,19 @@ body.rest-phase { background: var(--rest-bg); }
   background-clip: text;
 }
 .settings-btn {
-  width: 40px; height: 40px;
+  width: 48px; height: 48px;
   border-radius: 50%;
   border: none;
   background: white;
   box-shadow: 0 2px 12px var(--shadow);
-  font-size: 18px;
+  font-size: 20px;
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   transition: transform 0.2s;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: rgba(0,0,0,0.1);
 }
-.settings-btn:active { transform: scale(0.9); }
+.settings-btn:active { transform: scale(0.88); background: #f5f5f5; }
 
 /* 페이즈 카드 */
 .phase-card {
@@ -388,7 +390,7 @@ body.rest-phase .btn-primary {
   display: flex; align-items: center; gap: 12px;
 }
 .stepper-btn {
-  width: 34px; height: 34px;
+  width: 40px; height: 40px;
   border-radius: 50%;
   border: none;
   background: linear-gradient(135deg, #f5f5fa, #ededf5);
@@ -399,8 +401,10 @@ body.rest-phase .btn-primary {
   box-shadow: 0 2px 6px var(--shadow);
   transition: transform 0.2s;
   font-weight: 700;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: rgba(0,0,0,0.1);
 }
-.stepper-btn:active { transform: scale(0.9); }
+.stepper-btn:active { transform: scale(0.88); }
 .stepper-val {
   font-family: 'Nunito', sans-serif;
   font-size: 18px;
@@ -419,6 +423,9 @@ body.rest-phase .btn-primary {
   position: relative;
   cursor: pointer;
   transition: background 0.3s;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
 }
 .toggle.on {
   background: linear-gradient(135deg, var(--active-from), var(--active-to));
@@ -508,7 +515,7 @@ body.rest-phase .btn-primary {
   <!-- 헤더 -->
   <div class="header">
     <div class="header-title">🌿 회복 타이머</div>
-    <button class="settings-btn" onclick="toggleSettings()">⚙️</button>
+    <button class="settings-btn" id="settingsBtn">⚙️</button>
   </div>
 
   <!-- 메인 카드 -->
@@ -944,7 +951,11 @@ function updateCycleDots() {
 }
 
 function toggleSettings() {
-  document.getElementById('settingsPanel').classList.toggle('open');
+  const panel = document.getElementById('settingsPanel');
+  panel.classList.toggle('open');
+  if (panel.classList.contains('open')) {
+    setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+  }
 }
 
 function changeTime(type, delta) {
@@ -998,6 +1009,13 @@ function dismissOverlay() {
     S._next = null;
   }
 }
+
+// 설정 버튼 이벤트 (안드로이드 onclick 미작동 대비)
+document.getElementById('settingsBtn').addEventListener('click', toggleSettings);
+document.getElementById('settingsBtn').addEventListener('touchend', function(e) {
+  e.preventDefault();
+  toggleSettings();
+}, { passive: false });
 
 // 초기화 — 저장된 상태 복원
 const ring = document.getElementById('ringProgress');
