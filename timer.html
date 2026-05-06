@@ -269,6 +269,22 @@ body.rest-phase .time-display { color: var(--rest-text); }
 }
 .btn:active { transform: scale(0.96); }
 
+.btn-test {
+  width: 100%;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  background: rgba(150,150,200,0.1);
+  color: var(--text-dim);
+  border: 1.5px dashed #ddddf0;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: all 0.2s;
+  margin-top: -8px;
+}
+.btn-test:active { background: rgba(150,150,200,0.2); }
+
 .btn-primary {
   flex: 2;
   background: linear-gradient(135deg, #a8edca, #fed6e3);
@@ -561,6 +577,7 @@ body.rest-phase .btn-primary {
       <button class="btn btn-primary" id="mainBtn" onclick="handleMainBtn()">시작하기 💪</button>
       <button class="btn btn-secondary" onclick="handleReset()">초기화</button>
     </div>
+    <button class="btn btn-test" id="testBtn">⚡ 5초 테스트</button>
   </div>
 
   <!-- 사이클 -->
@@ -893,9 +910,9 @@ function updateDisplay() {
 
 function handleMainBtn() {
   if (S.phase==='idle') {
-    if (S._next==='rest') { S._next=null; startRest(); }
-    else if (S._next==='active') { S._next=null; startActive(); }
-    else startActive();
+    // _next는 dismissOverlay에서 이미 초기화됨
+    // idle 상태에서 시작 버튼 = 항상 활동 시작
+    startActive();
   } else if (S.phase==='active'||S.phase==='rest') {
     clearInterval(S.timer);
     // 일시정지 시 실제 남은 시간 정확히 저장
@@ -1018,12 +1035,12 @@ function showOverlay(emoji, title, sub, next, autoStart) {
 function dismissOverlay() {
   if (_overlayTimer) { clearTimeout(_overlayTimer); _overlayTimer = null; }
   document.getElementById('doneOverlay').classList.remove('show');
-  if (S._next==='rest') {
+  const next = S._next;
+  S._next = null; // 먼저 초기화
+  if (next === 'rest') {
     setTimeout(startRest, 300);
-  } else if (S._next==='active') {
-    // 활동은 수동 시작 (준비 필요)
+  } else if (next === 'active') {
     document.getElementById('nextHint').innerHTML = '<span>준비되면 시작 버튼을 누르세요 😊</span>';
-    S._next = null;
     saveState();
   }
 }
@@ -1044,6 +1061,25 @@ document.getElementById('doneBtnEl').addEventListener('touchend', function(e) {
   e.preventDefault();
   dismissOverlay();
 }, { passive: false });
+
+// 테스트 버튼 — 활동 5초, 휴식 10초로 단축
+document.getElementById('testBtn').addEventListener('click', function() {
+  if (S.phase !== 'idle') {
+    alert('타이머 진행 중에는 테스트할 수 없어요. 먼저 초기화해주세요.');
+    return;
+  }
+  // 임시로 시간 단축
+  const origActive = S.activeMins;
+  const origRest = S.restMins;
+  S.activeMins = 0.083; // 5초
+  S.restMins = 0.167;   // 10초
+  startActive();
+  // 원래 시간 복원 (다음 사이클부터)
+  setTimeout(() => {
+    S.activeMins = origActive;
+    S.restMins = origRest;
+  }, 100);
+});
 
 // 설정 버튼 이벤트 (안드로이드 onclick 미작동 대비)
 document.getElementById('settingsBtn').addEventListener('click', toggleSettings);
