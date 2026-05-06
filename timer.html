@@ -1062,24 +1062,35 @@ document.getElementById('doneBtnEl').addEventListener('touchend', function(e) {
   dismissOverlay();
 }, { passive: false });
 
-// 테스트 버튼 — 활동 5초, 휴식 10초로 단축
+// 테스트 버튼 — 활동 5초, 휴식 10초
+let _testMode = false;
+let _testOrigActive = 20;
+let _testOrigRest = 60;
+
 document.getElementById('testBtn').addEventListener('click', function() {
   if (S.phase !== 'idle') {
     alert('타이머 진행 중에는 테스트할 수 없어요. 먼저 초기화해주세요.');
     return;
   }
-  // 임시로 시간 단축
-  const origActive = S.activeMins;
-  const origRest = S.restMins;
-  S.activeMins = 0.083; // 5초
-  S.restMins = 0.167;   // 10초
+  _testMode = true;
+  _testOrigActive = S.activeMins;
+  _testOrigRest = S.restMins;
+  S.activeMins = 5 / 60;  // 5초
+  S.restMins = 10 / 60;   // 10초
   startActive();
-  // 원래 시간 복원 (다음 사이클부터)
-  setTimeout(() => {
-    S.activeMins = origActive;
-    S.restMins = origRest;
-  }, 100);
 });
+
+// 테스트 모드 복원 (휴식까지 완전히 끝난 후)
+function restoreTestMode() {
+  if (!_testMode) return;
+  _testMode = false;
+  S.activeMins = _testOrigActive;
+  S.restMins = _testOrigRest;
+  document.getElementById('activeVal').textContent = S.activeMins;
+  document.getElementById('activeValLabel').textContent = S.activeMins;
+  document.getElementById('restVal').textContent = S.restMins;
+  document.getElementById('restValLabel').textContent = S.restMins;
+}
 
 // 설정 버튼 이벤트 (안드로이드 onclick 미작동 대비)
 document.getElementById('settingsBtn').addEventListener('click', toggleSettings);
