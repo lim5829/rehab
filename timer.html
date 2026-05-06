@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>회복 타이머</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Nunito:wght@300;400;600;700;800&display=swap');
+
+:root {
+  --active-from: #ff9a56;
+  --active-to: #ff6b9d;
+  --active-text: #ff5f7e;
+  --active-bg: #fff5f0;
+  --rest-from: #56cfff;
+  --rest-to: #7b8fff;
+  --rest-text: #5b7fff;
+  --rest-bg: #f0f5ff;
+  --idle-from: #a8edca;
+  --idle-to: #fed6e3;
+  --bg: #fafafa;
+  --card: #ffffff;
+  --text: #2d2d3a;
+  --text-dim: #9b9baf;
+  --shadow: rgba(120,120,180,0.12);
+  --radius: 28px;
+  --radius-sm: 16px;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+body {
+  font-family: 'Noto Sans KR', 'Nunito', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 20px 40px;
+  transition: background 0.8s ease;
+  overflow-x: hidden;
+}
+
+body.active-phase { background: var(--active-bg); }
+body.rest-phase { background: var(--rest-bg); }
+
+/* 배경 블롭 */
+.blob {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.35;
+  pointer-events: none;
+  z-index: 0;
+  transition: opacity 1s ease;
+}
+.blob-1 {
+  width: 280px; height: 280px;
+  top: -80px; right: -60px;
+  background: radial-gradient(circle, #ffb3c6, #ffd6a5);
+}
+.blob-2 {
+  width: 220px; height: 220px;
+  bottom: -60px; left: -40px;
+  background: radial-gradient(circle, #a0d8ef, #c3b1e1);
+}
+.blob-3 {
+  width: 160px; height: 160px;
+  top: 40%; right: -40px;
+  background: radial-gradient(circle, #b5ead7, #ffdac1);
+  opacity: 0.25;
+}
+
+.container {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+/* 헤더 */
+.header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.header-title {
+  font-family: 'Nunito', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--active-from), var(--rest-to));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.settings-btn {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: white;
+  box-shadow: 0 2px 12px var(--shadow);
+  font-size: 18px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.2s;
+}
+.settings-btn:active { transform: scale(0.9); }
+
+/* 페이즈 카드 */
+.phase-card {
+  width: 100%;
+  background: white;
+  border-radius: var(--radius);
+  box-shadow: 0 4px 24px var(--shadow);
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  transition: box-shadow 0.6s ease;
+  position: relative;
+  overflow: hidden;
+}
+.phase-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--idle-from), var(--idle-to));
+  transition: background 0.6s ease;
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+body.active-phase .phase-card::before {
+  background: linear-gradient(90deg, var(--active-from), var(--active-to));
+}
+body.rest-phase .phase-card::before {
+  background: linear-gradient(90deg, var(--rest-from), var(--rest-to));
+}
+
+/* 페이즈 뱃지 */
+.phase-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 18px;
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 600;
+  background: #f5f5fa;
+  color: var(--text-dim);
+  transition: all 0.5s ease;
+  letter-spacing: 0.3px;
+}
+body.active-phase .phase-badge {
+  background: linear-gradient(135deg, #fff0eb, #ffe0ef);
+  color: var(--active-text);
+}
+body.rest-phase .phase-badge {
+  background: linear-gradient(135deg, #ebf3ff, #ede8ff);
+  color: var(--rest-text);
+}
+.phase-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+body.active-phase .phase-dot,
+body.rest-phase .phase-dot {
+  animation: blink 1.5s infinite;
+}
+@keyframes blink {
+  0%,100% { opacity:1; transform:scale(1); }
+  50% { opacity:0.3; transform:scale(0.6); }
+}
+
+/* 원형 타이머 */
+.ring-wrap {
+  position: relative;
+  width: 220px; height: 220px;
+}
+.ring-svg {
+  width: 100%; height: 100%;
+  transform: rotate(-90deg);
+}
+.ring-track {
+  fill: none;
+  stroke: #f0f0f6;
+  stroke-width: 10;
+}
+.ring-progress {
+  fill: none;
+  stroke: url(#activeGrad);
+  stroke-width: 10;
+  stroke-linecap: round;
+  stroke-dasharray: 629;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 1s linear;
+}
+.ring-inner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.time-display {
+  font-family: 'Nunito', sans-serif;
+  font-size: 52px;
+  font-weight: 700;
+  letter-spacing: -1px;
+  line-height: 1;
+  color: var(--text);
+  transition: color 0.5s;
+}
+body.active-phase .time-display { color: var(--active-text); }
+body.rest-phase .time-display { color: var(--rest-text); }
+
+.time-label {
+  font-size: 12px;
+  color: var(--text-dim);
+  font-weight: 500;
+  letter-spacing: 1.5px;
+}
+
+/* 다음 페이즈 안내 */
+.next-hint {
+  font-size: 13px;
+  color: var(--text-dim);
+  font-weight: 500;
+  min-height: 20px;
+  text-align: center;
+}
+.next-hint span {
+  display: inline-block;
+  padding: 3px 12px;
+  background: #f5f5fa;
+  border-radius: 100px;
+  font-size: 12px;
+}
+
+/* 버튼 */
+.btn-group {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+.btn {
+  flex: 1;
+  padding: 16px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  letter-spacing: 0.3px;
+}
+.btn:active { transform: scale(0.96); }
+
+.btn-primary {
+  flex: 2;
+  background: linear-gradient(135deg, #a8edca, #fed6e3);
+  color: #5a5a7a;
+  box-shadow: 0 4px 16px rgba(168,237,202,0.4);
+}
+body.active-phase .btn-primary {
+  background: linear-gradient(135deg, var(--active-from), var(--active-to));
+  color: white;
+  box-shadow: 0 4px 20px rgba(255,107,157,0.35);
+}
+body.rest-phase .btn-primary {
+  background: linear-gradient(135deg, var(--rest-from), var(--rest-to));
+  color: white;
+  box-shadow: 0 4px 20px rgba(91,127,255,0.35);
+}
+
+.btn-secondary {
+  background: white;
+  color: var(--text-dim);
+  box-shadow: 0 2px 10px var(--shadow);
+  border: 1.5px solid #f0f0f6;
+}
+
+/* 사이클 표시 */
+.cycle-strip {
+  width: 100%;
+  background: white;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 2px 12px var(--shadow);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.cycle-label {
+  font-size: 13px;
+  color: var(--text-dim);
+  font-weight: 500;
+}
+.cycle-dots {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+}
+.cycle-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: #ededf5;
+  transition: all 0.4s ease;
+}
+.cycle-dot.done {
+  background: linear-gradient(135deg, var(--active-from), var(--active-to));
+  box-shadow: 0 2px 6px rgba(255,107,157,0.4);
+  transform: scale(1.1);
+}
+
+/* 통계 카드들 */
+.stats-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+}
+.stat-card {
+  background: white;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 2px 12px var(--shadow);
+  padding: 14px 10px;
+  text-align: center;
+}
+.stat-val {
+  font-family: 'Nunito', sans-serif;
+  font-size: 24px;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--active-from), var(--rest-to));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.stat-label {
+  font-size: 10px;
+  color: var(--text-dim);
+  margin-top: 3px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* 설정 패널 */
+.settings-panel {
+  width: 100%;
+  background: white;
+  border-radius: var(--radius);
+  box-shadow: 0 4px 24px var(--shadow);
+  padding: 24px;
+  display: none;
+}
+.settings-panel.open { display: block; }
+.settings-title {
+  font-family: 'Nunito', sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 20px;
+}
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f5f5fa;
+}
+.settings-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.settings-label { font-size: 14px; font-weight: 600; color: var(--text); }
+.settings-sub { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+
+.stepper {
+  display: flex; align-items: center; gap: 12px;
+}
+.stepper-btn {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, #f5f5fa, #ededf5);
+  color: var(--text);
+  font-size: 18px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 6px var(--shadow);
+  transition: transform 0.2s;
+  font-weight: 700;
+}
+.stepper-btn:active { transform: scale(0.9); }
+.stepper-val {
+  font-family: 'Nunito', sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  min-width: 36px;
+  text-align: center;
+  color: var(--text);
+}
+
+/* 토글 */
+.toggle {
+  width: 46px; height: 26px;
+  border-radius: 100px;
+  background: #ededf5;
+  border: none;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+.toggle.on {
+  background: linear-gradient(135deg, var(--active-from), var(--active-to));
+}
+.toggle::after {
+  content: '';
+  position: absolute;
+  width: 20px; height: 20px;
+  background: white;
+  border-radius: 50%;
+  top: 3px; left: 3px;
+  transition: transform 0.3s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+.toggle.on::after { transform: translateX(20px); }
+
+/* 완료 오버레이 */
+.done-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(12px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+  padding: 40px;
+  text-align: center;
+}
+.done-overlay.show { opacity: 1; pointer-events: all; }
+
+.done-emoji {
+  font-size: 72px;
+  line-height: 1;
+  animation: bounce 0.6s cubic-bezier(.36,.07,.19,.97) both;
+}
+@keyframes bounce {
+  0% { transform: scale(0); }
+  60% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+.done-title {
+  font-family: 'Nunito', sans-serif;
+  font-size: 26px;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--active-from), var(--active-to));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.done-sub {
+  font-size: 15px;
+  color: var(--text-dim);
+  line-height: 1.7;
+  font-weight: 500;
+}
+.done-btn {
+  margin-top: 12px;
+  padding: 16px 48px;
+  border-radius: 100px;
+  border: none;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--active-from), var(--active-to));
+  color: white;
+  box-shadow: 0 6px 20px rgba(255,107,157,0.4);
+  transition: transform 0.2s;
+}
+.done-btn:active { transform: scale(0.96); }
+</style>
+</head>
+<body>
+
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+<div class="blob blob-3"></div>
+
+<div class="container">
+
+  <!-- 헤더 -->
+  <div class="header">
+    <div class="header-title">🌿 회복 타이머</div>
+    <button class="settings-btn" onclick="toggleSettings()">⚙️</button>
+  </div>
+
+  <!-- 메인 카드 -->
+  <div class="phase-card">
+    <div class="phase-badge">
+      <div class="phase-dot"></div>
+      <span id="phaseText">시작 대기 중</span>
+    </div>
+
+    <div class="ring-wrap">
+      <svg class="ring-svg" viewBox="0 0 220 220">
+        <defs>
+          <linearGradient id="activeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#ff9a56"/>
+            <stop offset="100%" stop-color="#ff6b9d"/>
+          </linearGradient>
+          <linearGradient id="restGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#56cfff"/>
+            <stop offset="100%" stop-color="#7b8fff"/>
+          </linearGradient>
+          <linearGradient id="idleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#a8edca"/>
+            <stop offset="100%" stop-color="#fed6e3"/>
+          </linearGradient>
+        </defs>
+        <circle class="ring-track" cx="110" cy="110" r="100"/>
+        <circle class="ring-progress" id="ringProgress" cx="110" cy="110" r="100"/>
+      </svg>
+      <div class="ring-inner">
+        <div class="time-display" id="timeDisplay">20:00</div>
+        <div class="time-label" id="timeLabel">활동 시간</div>
+      </div>
+    </div>
+
+    <div class="next-hint" id="nextHint">
+      <span>시작 버튼을 눌러주세요 😊</span>
+    </div>
+
+    <div class="btn-group">
+      <button class="btn btn-primary" id="mainBtn" onclick="handleMainBtn()">시작하기 💪</button>
+      <button class="btn btn-secondary" onclick="handleReset()">초기화</button>
+    </div>
+  </div>
+
+  <!-- 사이클 -->
+  <div class="cycle-strip">
+    <div>
+      <div class="cycle-label">완료 사이클</div>
+    </div>
+    <div class="cycle-dots" id="cycleDots">
+      <div class="cycle-dot"></div>
+      <div class="cycle-dot"></div>
+      <div class="cycle-dot"></div>
+      <div class="cycle-dot"></div>
+      <div class="cycle-dot"></div>
+    </div>
+    <div style="font-family:'Nunito',sans-serif;font-size:18px;font-weight:800;color:#2d2d3a" id="cycleCount">0</div>
+  </div>
+
+  <!-- 통계 -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-val" id="statActive">0</div>
+      <div class="stat-label">활동 완료</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" id="statRest">0</div>
+      <div class="stat-label">휴식 완료</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" id="statTotal">0분</div>
+      <div class="stat-label">총 활동</div>
+    </div>
+  </div>
+
+  <!-- 설정 패널 -->
+  <div class="settings-panel" id="settingsPanel">
+    <div class="settings-title">⚙️ 설정</div>
+
+    <div class="settings-row">
+      <div>
+        <div class="settings-label">🏃 활동 시간</div>
+        <div class="settings-sub"><span id="activeValLabel">20</span>분</div>
+      </div>
+      <div class="stepper">
+        <button class="stepper-btn" onclick="changeTime('active',-5)">−</button>
+        <div class="stepper-val" id="activeVal">20</div>
+        <button class="stepper-btn" onclick="changeTime('active',5)">+</button>
+      </div>
+    </div>
+
+    <div class="settings-row">
+      <div>
+        <div class="settings-label">😴 휴식 시간</div>
+        <div class="settings-sub"><span id="restValLabel">60</span>분</div>
+      </div>
+      <div class="stepper">
+        <button class="stepper-btn" onclick="changeTime('rest',-10)">−</button>
+        <div class="stepper-val" id="restVal">60</div>
+        <button class="stepper-btn" onclick="changeTime('rest',10)">+</button>
+      </div>
+    </div>
+
+    <div class="settings-row">
+      <div>
+        <div class="settings-label">🔔 소리 알림</div>
+        <div class="settings-sub">페이즈 전환 시</div>
+      </div>
+      <button class="toggle on" id="soundToggle" onclick="toggleSound()"></button>
+    </div>
+
+    <div class="settings-row">
+      <div>
+        <div class="settings-label">📳 진동 알림</div>
+        <div class="settings-sub">페이즈 전환 시</div>
+      </div>
+      <button class="toggle on" id="vibrateToggle" onclick="toggleVibrate()"></button>
+    </div>
+  </div>
+
+</div>
+
+<!-- 완료 오버레이 -->
+<div class="done-overlay" id="doneOverlay">
+  <div class="done-emoji" id="doneEmoji">🎉</div>
+  <div class="done-title" id="doneTitle">활동 완료!</div>
+  <div class="done-sub" id="doneSub">잘 하셨어요!<br>이제 편안히 쉬세요 🛌</div>
+  <button class="done-btn" id="doneBtnEl" onclick="dismissOverlay()">확인</button>
+</div>
+
+<script>
+const CIRC = 2 * Math.PI * 100; // 628.3
+
+let S = {
+  phase: 'idle',
+  pausedFrom: null,
+  remaining: 0,
+  timer: null,
+  cyclesActive: 0,
+  cyclesRest: 0,
+  soundOn: true,
+  vibrateOn: true,
+  activeMins: 20,
+  restMins: 60,
+  _next: null,
+  endTime: null, // 타이머 종료 예정 시각 (timestamp)
+};
+
+// 오디오
+function beep(freq, dur, vol=0.25) {
+  if (!S.soundOn) return;
+  try {
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.frequency.value = freq; o.type = 'sine';
+    g.gain.setValueAtTime(vol, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+    o.start(); o.stop(ctx.currentTime + dur);
+  } catch(e){}
+}
+function playActiveEnd() {
+  beep(880,0.15); setTimeout(()=>beep(1100,0.25),180); setTimeout(()=>beep(1320,0.4),380);
+}
+function playRestEnd() {
+  beep(660,0.15); setTimeout(()=>beep(880,0.15),180); setTimeout(()=>beep(1100,0.35),360);
+}
+function playTick() { beep(800,0.04,0.1); }
+
+function vib(p) { if(S.vibrateOn && navigator.vibrate) navigator.vibrate(p); }
+
+// 그라디언트 업데이트
+function updateGrad() {
+  const el = document.getElementById('ringProgress');
+  if (S.phase==='active' || (S.phase==='paused' && S.pausedFrom==='active')) {
+    el.setAttribute('stroke','url(#activeGrad)');
+  } else if (S.phase==='rest' || (S.phase==='paused' && S.pausedFrom==='rest')) {
+    el.setAttribute('stroke','url(#restGrad)');
+  } else {
+    el.setAttribute('stroke','url(#idleGrad)');
+  }
+}
+
+function startActive() {
+  S.phase = 'active';
+  S.remaining = S.activeMins * 60;
+  document.body.className = 'active-phase';
+  document.getElementById('phaseText').textContent = '🏃 활동 중';
+  document.getElementById('timeLabel').textContent = '활동 시간';
+  document.getElementById('mainBtn').textContent = '일시정지 ⏸';
+  document.getElementById('nextHint').innerHTML = `<span>완료 후 → 😴 ${S.restMins}분 휴식</span>`;
+  updateGrad();
+  tick();
+}
+
+function startRest() {
+  S.phase = 'rest';
+  S.remaining = S.restMins * 60;
+  document.body.className = 'rest-phase';
+  document.getElementById('phaseText').textContent = '😴 휴식 중';
+  document.getElementById('timeLabel').textContent = '휴식 시간';
+  document.getElementById('mainBtn').textContent = '일시정지 ⏸';
+  document.getElementById('nextHint').innerHTML = `<span>완료 후 → 🏃 ${S.activeMins}분 활동</span>`;
+  updateGrad();
+  tick();
+}
+
+function tick() {
+  clearInterval(S.timer);
+  // 종료 시각 기록 (백그라운드 복귀 시 정확한 시간 계산용)
+  S.endTime = Date.now() + S.remaining * 1000;
+  updateDisplay();
+  S.timer = setInterval(() => {
+    // setInterval 대신 실제 시각 기준으로 남은 시간 계산
+    const now = Date.now();
+    S.remaining = Math.max(0, Math.round((S.endTime - now) / 1000));
+    if (S.remaining <= 0) { clearInterval(S.timer); phaseComplete(); return; }
+    if (S.remaining <= 10) playTick();
+    updateDisplay();
+  }, 500); // 0.5초마다 체크 (더 정확하게)
+}
+
+// 화면 복귀 시 시간 재동기화
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    if (S.phase === 'active' || S.phase === 'rest') {
+      const now = Date.now();
+      S.remaining = Math.max(0, Math.round((S.endTime - now) / 1000));
+      if (S.remaining <= 0) {
+        clearInterval(S.timer);
+        phaseComplete();
+      } else {
+        updateDisplay();
+      }
+    }
+  }
+});
+
+function phaseComplete() {
+  vib([200,100,200,100,400]);
+  if (S.phase === 'active') {
+    S.cyclesActive++;
+    updateStats();
+    playActiveEnd();
+    showOverlay('🌟','활동 완료!',`${S.activeMins}분 정말 잘 하셨어요! 💪<br>이제 ${S.restMins}분 충분히 쉬세요 🛌`,'rest');
+  } else {
+    S.cyclesRest++;
+    updateStats();
+    updateCycleDots();
+    playRestEnd();
+    showOverlay('🌸','휴식 완료!',`${S.restMins}분 잘 쉬셨어요! 😊<br>다시 ${S.activeMins}분 활동할 준비 되셨나요? 🏃`,'active');
+  }
+  S.phase = 'idle';
+  document.body.className = '';
+  document.getElementById('mainBtn').textContent = '시작하기 💪';
+  document.getElementById('phaseText').textContent = '완료 ✨';
+  updateGrad();
+}
+
+function updateDisplay() {
+  const m = Math.floor(S.remaining/60).toString().padStart(2,'0');
+  const s = (S.remaining%60).toString().padStart(2,'0');
+  document.getElementById('timeDisplay').textContent = `${m}:${s}`;
+
+  const total = (S.phase==='active'||(S.phase==='paused'&&S.pausedFrom==='active'))
+    ? S.activeMins*60 : S.restMins*60;
+  const elapsed = total - S.remaining;
+  const progress = total>0 ? elapsed/total : 0;
+  const offset = CIRC*(1-progress);
+  const ring = document.getElementById('ringProgress');
+  ring.style.strokeDasharray = CIRC;
+  ring.style.strokeDashoffset = offset;
+}
+
+function handleMainBtn() {
+  if (S.phase==='idle') {
+    if (S._next==='rest') { S._next=null; startRest(); }
+    else if (S._next==='active') { S._next=null; startActive(); }
+    else startActive();
+  } else if (S.phase==='active'||S.phase==='rest') {
+    clearInterval(S.timer);
+    // 일시정지 시 실제 남은 시간 정확히 저장
+    S.remaining = Math.max(0, Math.round((S.endTime - Date.now()) / 1000));
+    S.pausedFrom = S.phase;
+    S.phase = 'paused';
+    document.getElementById('mainBtn').textContent = '계속하기 ▶';
+    document.getElementById('phaseText').textContent = '⏸ 일시정지';
+    document.body.className = '';
+    updateGrad();
+  } else if (S.phase==='paused') {
+    S.phase = S.pausedFrom;
+    document.body.className = S.phase==='active' ? 'active-phase' : 'rest-phase';
+    document.getElementById('mainBtn').textContent = '일시정지 ⏸';
+    document.getElementById('phaseText').textContent = S.phase==='active' ? '🏃 활동 중' : '😴 휴식 중';
+    updateGrad();
+    tick();
+  }
+}
+
+function handleReset() {
+  clearInterval(S.timer);
+  S.phase = 'idle'; S._next = null;
+  S.remaining = S.activeMins*60;
+  document.body.className = '';
+  document.getElementById('phaseText').textContent = '시작 대기 중';
+  document.getElementById('mainBtn').textContent = '시작하기 💪';
+  document.getElementById('timeLabel').textContent = '활동 시간';
+  document.getElementById('nextHint').innerHTML = '<span>시작 버튼을 눌러주세요 😊</span>';
+  document.getElementById('timeDisplay').textContent = `${String(S.activeMins).padStart(2,'0')}:00`;
+  const ring = document.getElementById('ringProgress');
+  ring.style.strokeDasharray = CIRC;
+  ring.style.strokeDashoffset = 0;
+  ring.setAttribute('stroke','url(#idleGrad)');
+
+  if (S.cyclesActive>0||S.cyclesRest>0) {
+    if (confirm('통계도 초기화할까요?')) {
+      S.cyclesActive=0; S.cyclesRest=0;
+      updateStats(); updateCycleDots();
+    }
+  }
+}
+
+function updateStats() {
+  document.getElementById('statActive').textContent = S.cyclesActive;
+  document.getElementById('statRest').textContent = S.cyclesRest;
+  document.getElementById('statTotal').textContent = (S.cyclesActive*S.activeMins)+'분';
+}
+
+function updateCycleDots() {
+  const dots = document.querySelectorAll('.cycle-dot');
+  const count = S.cyclesRest % 5;
+  dots.forEach((d,i) => d.classList.toggle('done', i<count));
+  document.getElementById('cycleCount').textContent = S.cyclesRest;
+}
+
+function toggleSettings() {
+  document.getElementById('settingsPanel').classList.toggle('open');
+}
+
+function changeTime(type, delta) {
+  if (type==='active') {
+    S.activeMins = Math.max(5, Math.min(60, S.activeMins+delta));
+    document.getElementById('activeVal').textContent = S.activeMins;
+    document.getElementById('activeValLabel').textContent = S.activeMins;
+    if (S.phase==='idle') {
+      S.remaining = S.activeMins*60;
+      document.getElementById('timeDisplay').textContent = `${String(S.activeMins).padStart(2,'0')}:00`;
+    }
+  } else {
+    S.restMins = Math.max(10, Math.min(120, S.restMins+delta));
+    document.getElementById('restVal').textContent = S.restMins;
+    document.getElementById('restValLabel').textContent = S.restMins;
+  }
+}
+
+function toggleSound() {
+  S.soundOn = !S.soundOn;
+  document.getElementById('soundToggle').classList.toggle('on', S.soundOn);
+}
+function toggleVibrate() {
+  S.vibrateOn = !S.vibrateOn;
+  document.getElementById('vibrateToggle').classList.toggle('on', S.vibrateOn);
+}
+
+function showOverlay(emoji, title, sub, next) {
+  S._next = next;
+  document.getElementById('doneEmoji').textContent = emoji;
+  document.getElementById('doneTitle').textContent = title;
+  document.getElementById('doneSub').innerHTML = sub;
+  const btn = document.getElementById('doneBtnEl');
+  if (next==='rest') {
+    btn.textContent = '휴식 시작 😴';
+    btn.style.background = 'linear-gradient(135deg,#56cfff,#7b8fff)';
+    btn.style.boxShadow = '0 6px 20px rgba(91,127,255,0.4)';
+  } else {
+    btn.textContent = '활동 시작 💪';
+    btn.style.background = 'linear-gradient(135deg,#ff9a56,#ff6b9d)';
+    btn.style.boxShadow = '0 6px 20px rgba(255,107,157,0.4)';
+  }
+  document.getElementById('doneOverlay').classList.add('show');
+}
+
+function dismissOverlay() {
+  document.getElementById('doneOverlay').classList.remove('show');
+  if (S._next==='rest') setTimeout(startRest,300);
+  else if (S._next==='active') {
+    document.getElementById('nextHint').innerHTML = '<span>준비되면 시작 버튼을 누르세요 😊</span>';
+    S._next = null;
+  }
+}
+
+// 초기화
+S.remaining = S.activeMins*60;
+const ring = document.getElementById('ringProgress');
+ring.style.strokeDasharray = CIRC;
+ring.style.strokeDashoffset = 0;
+updateStats();
+</script>
+</body>
+</html>
