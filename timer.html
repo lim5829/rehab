@@ -703,6 +703,7 @@ function startActive() {
   document.getElementById('nextHint').innerHTML = `<span>완료 후 → 😴 ${S.restMins}분 휴식</span>`;
   updateGrad();
   tick();
+  saveState();
 }
 
 function startRest() {
@@ -715,6 +716,7 @@ function startRest() {
   document.getElementById('nextHint').innerHTML = `<span>완료 후 → 🏃 ${S.activeMins}분 활동</span>`;
   updateGrad();
   tick();
+  saveState();
 }
 
 function tick() {
@@ -732,21 +734,113 @@ function tick() {
   }, 500); // 0.5초마다 체크 (더 정확하게)
 }
 
-// 화면 복귀 시 시간 재동기화
+// 상태 저장
+function saveState() {
+  try {
+    localStorage.setItem('recoveryTimer', JSON.stringify({
+      phase: S.phase, pausedFrom: S.pausedFrom,
+      remaining: S.remaining, endTime: S.endTime,
+      cyclesActive: S.cyclesActive, cyclesRest: S.cyclesRest,
+      soundOn: S.soundOn, vibrateOn: S.vibrateOn,
+      activeMins: S.activeMins, restMins: S.restMins, _next: S._next,
+    }));
+  } catch(e){}
+}
+
+// 상태 복원
+function loadState() {
+  try {
+    const raw = localStorage.getItem('recoveryTimer');
+    if (!raw) return;
+    const v = JSON.parse(raw);
+
+    S.cyclesActive = v.cyclesActive||0;
+    S.cyclesRest = v.cyclesRest||0;
+    S.soundOn = v.soundOn!==false;
+    S.vibrateOn = v.vibrateOn!==false;
+    S.activeMins = v.activeMins||20;
+    S.restMins = v.restMins||60;
+    S._next = v._next||null;
+    S.endTime = v.endTime||null;
+
+    document.getElementById('activeVal').textContent = S.activeMins;
+    document.getElementById('activeValLabel').textContent = S.activeMins;
+    document.getElementById('restVal').textContent = S.restMins;
+    document.getElementById('restValLabel').textContent = S.restMins;
+    document.getElementById('soundToggle').classList.toggle('on', S.soundOn);
+    document.getElementById('vibrateToggle').classList.toggle('on', S.vibrateOn);
+    updateStats(); updateCycleDots();
+
+    if (v.phase==='active'||v.phase==='rest') {
+      const realRemaining = S.endTime
+        ? Math.max(0, Math.round((S.endTime - Date.now())/1000))
+        : v.remaining;
+      S.remaining = realRemaining;
+      if (realRemaining <= 0) {
+        S.phase = v.phase; phaseComplete();
+      } else {
+        if (v.phase==='active') {
+          S.phase='active';
+          document.body.className='active-phase';
+          document.getElementById('phaseText').textContent='🏃 활동 중';
+          document.getElementById('timeLabel').textContent='활동 시간';
+          document.getElementById('mainBtn').textContent='일시정지 ⏸';
+          document.getElementById('nextHint').innerHTML=`<span>완료 후 → 😴 ${S.restMins}분 휴식</span>`;
+        } else {
+          S.phase='rest';
+          document.body.className='rest-phase';
+          document.getElementById('phaseText').textContent='😴 휴식 중';
+          document.getElementById('timeLabel').textContent='휴식 시간';
+          document.getElementById('mainBtn').textContent='일시정지 ⏸';
+          document.getElementById('nextHint').innerHTML=`<span>완료 후 → 🏃 ${S.activeMins}분 활동</span>`;
+        }
+        updateGrad(); tick();
+      }
+    } else if (v.phase==='paused') {
+      S.phase='paused'; S.pausedFrom=v.pausedFrom; S.remaining=v.remaining;
+      document.getElementById('mainBtn').textContent='계속하기 ▶';
+      document.getElementById('phaseText').textContent='⏸ 일시정지';
+      document.getElementById('timeLabel').textContent=v.pausedFrom==='active'?'활동 시간':'휴식 시간';
+      document.getElementById('nextHint').innerHTML=v.pausedFrom==='active'
+        ?`<span>완료 후 → 😴 ${S.restMins}분 휴식</span>`
+        :`<span>완료 후 → 🏃 ${S.activeMins}분 활동</span>`;
+      updateGrad(); updateDisplay();
+    } else {
+      S.remaining = S.activeMins*60;
+    }
+  } catch(e) { S.remaining = S.activeMins*60; }
+}
+
+// 화면 전환·종료 시 저장
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') {
     if (S.phase === 'active' || S.phase === 'rest') {
-      const now = Date.now();
-      S.remaining = Math.max(0, Math.round((S.endTime - now) / 1000));
-      if (S.remaining <= 0) {
-        clearInterval(S.timer);
-        phaseComplete();
-      } else {
-        updateDisplay();
-      }
+      S.remaining = Math.max(0, Math.round((S.endTime - Date.now()) / 1000));
+      if (S.remaining <= 0) { clearInterval(S.timer); phaseComplete(); }
+      else updateDisplay();
     }
+  } else {
+    saveState();
   }
 });
+
+// 안드로이드 대응 — 페이지 숨김/언로드 시 저장
+window.addEventListener('pagehide', saveState);
+window.addEventListener('beforeunload', saveState);
+
+// 안드로이드 bfcache 복귀 대응
+window.addEventListener('pageshow', (e) => {
+  if (e.persisted && (S.phase === 'active' || S.phase === 'rest')) {
+    S.remaining = Math.max(0, Math.round((S.endTime - Date.now()) / 1000));
+    if (S.remaining <= 0) { clearInterval(S.timer); phaseComplete(); }
+    else { clearInterval(S.timer); tick(); }
+  }
+});
+
+// 5초마다 자동 저장 (강제 종료 대비)
+setInterval(() => {
+  if (S.phase === 'active' || S.phase === 'rest') saveState();
+}, 5000);
 
 function phaseComplete() {
   vib([200,100,200,100,400]);
@@ -767,6 +861,7 @@ function phaseComplete() {
   document.getElementById('mainBtn').textContent = '시작하기 💪';
   document.getElementById('phaseText').textContent = '완료 ✨';
   updateGrad();
+  saveState();
 }
 
 function updateDisplay() {
@@ -799,6 +894,7 @@ function handleMainBtn() {
     document.getElementById('phaseText').textContent = '⏸ 일시정지';
     document.body.className = '';
     updateGrad();
+    saveState();
   } else if (S.phase==='paused') {
     S.phase = S.pausedFrom;
     document.body.className = S.phase==='active' ? 'active-phase' : 'rest-phase';
@@ -806,6 +902,7 @@ function handleMainBtn() {
     document.getElementById('phaseText').textContent = S.phase==='active' ? '🏃 활동 중' : '😴 휴식 중';
     updateGrad();
     tick();
+    saveState();
   }
 }
 
@@ -830,6 +927,7 @@ function handleReset() {
       updateStats(); updateCycleDots();
     }
   }
+  saveState();
 }
 
 function updateStats() {
@@ -901,12 +999,16 @@ function dismissOverlay() {
   }
 }
 
-// 초기화
-S.remaining = S.activeMins*60;
+// 초기화 — 저장된 상태 복원
 const ring = document.getElementById('ringProgress');
 ring.style.strokeDasharray = CIRC;
 ring.style.strokeDashoffset = 0;
-updateStats();
+loadState();
+if (S.phase === 'idle') {
+  S.remaining = S.activeMins * 60;
+  document.getElementById('timeDisplay').textContent = `${String(S.activeMins).padStart(2,'0')}:00`;
+  updateStats();
+}
 </script>
 </body>
 </html>
