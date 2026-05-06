@@ -489,7 +489,7 @@ body.rest-phase .btn-primary {
 }
 .done-btn {
   margin-top: 12px;
-  padding: 16px 48px;
+  padding: 18px 48px;
   border-radius: 100px;
   border: none;
   font-family: 'Noto Sans KR', sans-serif;
@@ -500,8 +500,11 @@ body.rest-phase .btn-primary {
   color: white;
   box-shadow: 0 6px 20px rgba(255,107,157,0.4);
   transition: transform 0.2s;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: rgba(0,0,0,0.1);
+  min-width: 200px;
 }
-.done-btn:active { transform: scale(0.96); }
+.done-btn:active { transform: scale(0.94); }
 </style>
 </head>
 <body>
@@ -514,7 +517,7 @@ body.rest-phase .btn-primary {
 
   <!-- 헤더 -->
   <div class="header">
-    <div class="header-title">🌿 회복 타이머</div>
+    <div class="header-title" id="dayCounter">🌿 회복 타이머</div>
     <button class="settings-btn" id="settingsBtn">⚙️</button>
   </div>
 
@@ -643,7 +646,7 @@ body.rest-phase .btn-primary {
   <div class="done-emoji" id="doneEmoji">🎉</div>
   <div class="done-title" id="doneTitle">활동 완료!</div>
   <div class="done-sub" id="doneSub">잘 하셨어요!<br>이제 편안히 쉬세요 🛌</div>
-  <button class="done-btn" id="doneBtnEl" onclick="dismissOverlay()">확인</button>
+  <button class="done-btn" id="doneBtnEl">확인</button>
 </div>
 
 <script>
@@ -855,13 +858,15 @@ function phaseComplete() {
     S.cyclesActive++;
     updateStats();
     playActiveEnd();
-    showOverlay('🌟','활동 완료!',`${S.activeMins}분 정말 잘 하셨어요! 💪<br>이제 ${S.restMins}분 충분히 쉬세요 🛌`,'rest');
+    // 오버레이 3초 보여주고 자동으로 휴식 시작
+    showOverlay('🌟','활동 완료! 수고하셨어요 💪',`잠시 후 ${S.restMins}분 휴식이 자동으로 시작됩니다 🛌`,'rest', true);
   } else {
     S.cyclesRest++;
     updateStats();
     updateCycleDots();
     playRestEnd();
-    showOverlay('🌸','휴식 완료!',`${S.restMins}분 잘 쉬셨어요! 😊<br>다시 ${S.activeMins}분 활동할 준비 되셨나요? 🏃`,'active');
+    // 오버레이 3초 보여주고 자동으로 활동 대기
+    showOverlay('🌸','휴식 완료! 잘 쉬셨어요 😊',`잠시 후 ${S.activeMins}분 활동 타이머가 준비됩니다 🏃`,'active', false);
   }
   S.phase = 'idle';
   document.body.className = '';
@@ -983,32 +988,62 @@ function toggleVibrate() {
   document.getElementById('vibrateToggle').classList.toggle('on', S.vibrateOn);
 }
 
-function showOverlay(emoji, title, sub, next) {
+let _overlayTimer = null;
+function showOverlay(emoji, title, sub, next, autoStart) {
   S._next = next;
   document.getElementById('doneEmoji').textContent = emoji;
   document.getElementById('doneTitle').textContent = title;
   document.getElementById('doneSub').innerHTML = sub;
   const btn = document.getElementById('doneBtnEl');
   if (next==='rest') {
-    btn.textContent = '휴식 시작 😴';
+    btn.textContent = '지금 바로 휴식 시작 😴';
     btn.style.background = 'linear-gradient(135deg,#56cfff,#7b8fff)';
     btn.style.boxShadow = '0 6px 20px rgba(91,127,255,0.4)';
   } else {
-    btn.textContent = '활동 시작 💪';
+    btn.textContent = '활동 준비 완료 💪';
     btn.style.background = 'linear-gradient(135deg,#ff9a56,#ff6b9d)';
     btn.style.boxShadow = '0 6px 20px rgba(255,107,157,0.4)';
   }
   document.getElementById('doneOverlay').classList.add('show');
+
+  // 자동 전환: 활동 완료 후 3초 뒤 자동으로 휴식 시작
+  if (_overlayTimer) clearTimeout(_overlayTimer);
+  if (autoStart) {
+    _overlayTimer = setTimeout(() => {
+      dismissOverlay();
+    }, 3000);
+  }
 }
 
 function dismissOverlay() {
+  if (_overlayTimer) { clearTimeout(_overlayTimer); _overlayTimer = null; }
   document.getElementById('doneOverlay').classList.remove('show');
-  if (S._next==='rest') setTimeout(startRest,300);
-  else if (S._next==='active') {
+  if (S._next==='rest') {
+    setTimeout(startRest, 300);
+  } else if (S._next==='active') {
+    // 활동은 수동 시작 (준비 필요)
     document.getElementById('nextHint').innerHTML = '<span>준비되면 시작 버튼을 누르세요 😊</span>';
     S._next = null;
+    saveState();
   }
 }
+
+// 수술 후 경과일 계산
+(function() {
+  const surgery = new Date('2026-03-18T00:00:00');
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const diff = Math.floor((today - surgery) / (1000 * 60 * 60 * 24)) + 1;
+  const el = document.getElementById('dayCounter');
+  el.textContent = '🌿 수술 후 ' + diff + '일째';
+})();
+
+// 완료 버튼 이벤트
+document.getElementById('doneBtnEl').addEventListener('click', dismissOverlay);
+document.getElementById('doneBtnEl').addEventListener('touchend', function(e) {
+  e.preventDefault();
+  dismissOverlay();
+}, { passive: false });
 
 // 설정 버튼 이벤트 (안드로이드 onclick 미작동 대비)
 document.getElementById('settingsBtn').addEventListener('click', toggleSettings);
