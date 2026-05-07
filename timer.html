@@ -6,34 +6,24 @@
 <title>회복 타이머</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800&family=Nunito:wght@400;700;800&display=swap');
-
 :root {
-  --stand-c: #ff6b9d;
-  --stand-c2: #ff9a56;
-  --stand-bg: #fff5f0;
-  --sit-c: #f0932b;
-  --sit-c2: #f9ca24;
-  --sit-bg: #fffbf0;
-  --rest-c: #5b7fff;
-  --rest-c2: #56cfff;
-  --rest-bg: #f0f5ff;
-  --bg: #fafafa;
-  --text: #2d2d3a;
-  --text-dim: #9b9baf;
-  --border: #ededf5;
-  --shadow: rgba(120,120,180,0.1);
-  --radius: 24px;
-  --radius-sm: 14px;
+  --stand-c: #ff6b9d; --stand-c2: #ff9a56; --stand-bg: #fff5f0;
+  --walk-c: #00b894; --walk-c2: #55efc4; --walk-bg: #f0fff4;
+  --sit-c: #f0932b; --sit-c2: #f9ca24; --sit-bg: #fffbf0;
+  --rest-c: #5b7fff; --rest-c2: #56cfff; --rest-bg: #f0f5ff;
+  --bg: #fafafa; --text: #2d2d3a; --text-dim: #9b9baf;
+  --border: #ededf5; --shadow: rgba(120,120,180,0.1);
+  --radius: 24px; --radius-sm: 14px;
 }
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 body {
   font-family: 'Noto Sans KR', sans-serif;
   background: var(--bg); color: var(--text);
   min-height: 100vh; padding: 24px 16px 60px;
-  transition: background 0.6s ease;
-  overflow-x: hidden;
+  transition: background 0.6s ease; overflow-x: hidden;
 }
 body.standing { background: var(--stand-bg); }
+body.walking { background: var(--walk-bg); }
 body.sitting { background: var(--sit-bg); }
 body.resting { background: var(--rest-bg); }
 .blob {
@@ -68,12 +58,14 @@ body.resting { background: var(--rest-bg); }
   background: #ddd; transition: background 0.5s;
 }
 body.standing .status-card::before { background: linear-gradient(90deg, var(--stand-c2), var(--stand-c)); }
+body.walking .status-card::before { background: linear-gradient(90deg, var(--walk-c2), var(--walk-c)); }
 body.sitting .status-card::before { background: linear-gradient(90deg, var(--sit-c2), var(--sit-c)); }
 body.resting .status-card::before { background: linear-gradient(90deg, var(--rest-c2), var(--rest-c)); }
 .status-emoji { font-size: 44px; margin-bottom: 8px; line-height: 1; }
 .status-label { font-size: 13px; color: var(--text-dim); font-weight: 600; letter-spacing: 1px; margin-bottom: 4px; }
 .status-name { font-size: 22px; font-weight: 700; margin-bottom: 16px; }
 body.standing .status-name { color: var(--stand-c); }
+body.walking .status-name { color: var(--walk-c); }
 body.sitting .status-name { color: var(--sit-c); }
 body.resting .status-name { color: var(--rest-c); }
 .timer-display {
@@ -82,10 +74,12 @@ body.resting .status-name { color: var(--rest-c); }
   letter-spacing: -2px; line-height: 1; margin-bottom: 6px;
 }
 body.standing .timer-display { color: var(--stand-c); }
+body.walking .timer-display { color: var(--walk-c); }
 body.sitting .timer-display { color: var(--sit-c); }
 body.resting .timer-display { color: var(--rest-c); }
-.timer-sub { font-size: 13px; color: var(--text-dim); margin-bottom: 16px; }
-.timer-sub.over { color: #e53e3e; font-weight: 600; }
+.timer-sub { font-size: 13px; color: var(--text-dim); margin-bottom: 4px; }
+.timer-cumulative { font-size: 12px; color: var(--text-dim); margin-bottom: 14px; font-weight: 500; }
+.timer-cumulative.over { color: #e53e3e; font-weight: 700; }
 .progress-bar {
   width: 100%; height: 6px; background: var(--border);
   border-radius: 100px; overflow: hidden; margin-bottom: 16px;
@@ -93,25 +87,27 @@ body.resting .timer-display { color: var(--rest-c); }
 .progress-fill { height: 100%; border-radius: 100px;
   transition: width 1s linear, background 0.5s; background: #ddd; }
 body.standing .progress-fill { background: linear-gradient(90deg, var(--stand-c2), var(--stand-c)); }
+body.walking .progress-fill { background: linear-gradient(90deg, var(--walk-c2), var(--walk-c)); }
 body.sitting .progress-fill { background: linear-gradient(90deg, var(--sit-c2), var(--sit-c)); }
 body.resting .progress-fill { background: linear-gradient(90deg, var(--rest-c2), var(--rest-c)); }
 .progress-fill.over { background: linear-gradient(90deg, #ff6b6b, #e53e3e) !important; }
-.action-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+.action-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; }
 .action-btn {
-  padding: 18px 8px; border-radius: var(--radius-sm);
+  padding: 14px 4px; border-radius: var(--radius-sm);
   border: 2px solid var(--border); background: white;
   cursor: pointer; display: flex; flex-direction: column;
-  align-items: center; gap: 6px;
+  align-items: center; gap: 4px;
   font-family: 'Noto Sans KR', sans-serif;
-  font-weight: 700; font-size: 14px; color: var(--text-dim);
+  font-weight: 700; color: var(--text-dim);
   transition: all 0.2s; touch-action: manipulation;
 }
 .action-btn:active { transform: scale(0.96); }
 .action-btn.active-stand { background: linear-gradient(135deg, var(--stand-c2), var(--stand-c)); color: white; border-color: transparent; box-shadow: 0 4px 16px rgba(255,107,157,0.35); }
+.action-btn.active-walk { background: linear-gradient(135deg, var(--walk-c2), var(--walk-c)); color: white; border-color: transparent; box-shadow: 0 4px 16px rgba(0,184,148,0.35); }
 .action-btn.active-sit { background: linear-gradient(135deg, var(--sit-c2), var(--sit-c)); color: white; border-color: transparent; box-shadow: 0 4px 16px rgba(240,147,43,0.35); }
 .action-btn.active-rest { background: linear-gradient(135deg, var(--rest-c2), var(--rest-c)); color: white; border-color: transparent; box-shadow: 0 4px 16px rgba(91,127,255,0.35); }
-.action-emoji { font-size: 24px; line-height: 1; }
-.action-name { font-size: 13px; }
+.action-emoji { font-size: 22px; line-height: 1; }
+.action-name { font-size: 12px; }
 .stop-btn {
   width: 100%; padding: 14px;
   border-radius: var(--radius-sm);
@@ -135,7 +131,7 @@ body.resting .progress-fill { background: linear-gradient(90deg, var(--rest-c2),
 .card-title-sub { font-size: 11px; color: var(--text-dim); font-weight: 500; }
 .today-row {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 12px 0; border-bottom: 1px solid #f5f5fa;
+  padding: 10px 0; border-bottom: 1px solid #f5f5fa;
 }
 .today-row:last-child { border-bottom: none; }
 .today-row-left { display: flex; align-items: center; gap: 12px; }
@@ -144,6 +140,7 @@ body.resting .progress-fill { background: linear-gradient(90deg, var(--rest-c2),
   display: flex; align-items: center; justify-content: center; font-size: 18px;
 }
 .row-stand { background: linear-gradient(135deg, #ffe5ec, #ffe9c8); }
+.row-walk { background: linear-gradient(135deg, #d4f5e9, #c8f0e0); }
 .row-sit { background: linear-gradient(135deg, #fff8e1, #ffe0b2); }
 .row-rest { background: linear-gradient(135deg, #e3f2fd, #e8eaff); }
 .today-row-name { font-size: 14px; font-weight: 600; }
@@ -152,6 +149,10 @@ body.resting .progress-fill { background: linear-gradient(90deg, var(--rest-c2),
   font-family: 'Nunito', sans-serif;
   font-size: 18px; font-weight: 800;
 }
+.t-stand { color: var(--stand-c); }
+.t-walk { color: var(--walk-c); }
+.t-sit { color: var(--sit-c); }
+.t-rest { color: var(--rest-c); }
 .history-list {
   display: flex; flex-direction: column; gap: 10px;
   max-height: 320px; overflow-y: auto;
@@ -166,12 +167,10 @@ body.resting .progress-fill { background: linear-gradient(90deg, var(--rest-c2),
   background: #ededf5; margin-bottom: 6px;
 }
 .bar-stand { background: linear-gradient(90deg, var(--stand-c2), var(--stand-c)); }
+.bar-walk { background: linear-gradient(90deg, var(--walk-c2), var(--walk-c)); }
 .bar-sit { background: linear-gradient(90deg, var(--sit-c2), var(--sit-c)); }
 .bar-rest { background: linear-gradient(90deg, var(--rest-c2), var(--rest-c)); }
-.history-day-times { display: flex; justify-content: space-between; font-size: 11px; }
-.t-stand { color: var(--stand-c); font-weight: 600; }
-.t-sit { color: var(--sit-c); font-weight: 600; }
-.t-rest { color: var(--rest-c); font-weight: 600; }
+.history-day-times { display: flex; justify-content: space-between; font-size: 10px; font-weight: 600; }
 .alert {
   position: fixed; top: 16px; left: 16px; right: 16px;
   background: white; padding: 16px 20px;
@@ -183,6 +182,7 @@ body.resting .progress-fill { background: linear-gradient(90deg, var(--rest-c2),
 }
 .alert.show { transform: translateY(0); }
 .alert.stand { border-left-color: var(--stand-c); }
+.alert.walk { border-left-color: var(--walk-c); }
 .alert.sit { border-left-color: var(--sit-c); }
 .alert.rest { border-left-color: var(--rest-c); }
 .alert-emoji { font-size: 28px; }
@@ -226,14 +226,16 @@ body.resting .progress-fill { background: linear-gradient(90deg, var(--rest-c2),
     <div class="status-name" id="statusName">대기 중</div>
     <div class="timer-display" id="timerDisplay">00:00</div>
     <div class="timer-sub" id="timerSub">활동을 선택해주세요</div>
+    <div class="timer-cumulative" id="timerCumulative"></div>
     <div class="progress-bar">
       <div class="progress-fill" id="progressFill" style="width:0%"></div>
     </div>
-    <div class="limit-info" id="limitInfo">서기 20분 · 앉기 30분 · 휴식 60분</div>
+    <div class="limit-info">서기·걷기 합계 20분 · 앉기 30분 · 휴식 60분</div>
   </div>
 
   <div class="action-grid">
-    <button class="action-btn" id="btnStand"><div class="action-emoji">🏃</div><div class="action-name">서기</div></button>
+    <button class="action-btn" id="btnStand"><div class="action-emoji">🧍</div><div class="action-name">서기</div></button>
+    <button class="action-btn" id="btnWalk"><div class="action-emoji">🚶</div><div class="action-name">걷기</div></button>
     <button class="action-btn" id="btnSit"><div class="action-emoji">🪑</div><div class="action-name">앉기</div></button>
     <button class="action-btn" id="btnRest"><div class="action-emoji">🛌</div><div class="action-name">휴식</div></button>
   </div>
@@ -244,22 +246,29 @@ body.resting .progress-fill { background: linear-gradient(90deg, var(--rest-c2),
     <div class="card-title">📊 오늘 합계 <span class="card-title-sub" id="todayCycles">0 사이클</span></div>
     <div class="today-row">
       <div class="today-row-left">
-        <div class="today-row-emoji row-stand">🏃</div>
-        <div><div class="today-row-name">서기</div><div class="today-row-detail" id="standDetail">0회 · 평균 0분</div></div>
+        <div class="today-row-emoji row-stand">🧍</div>
+        <div><div class="today-row-name">서기</div><div class="today-row-detail" id="standDetail">0회</div></div>
       </div>
       <div class="today-row-time t-stand" id="standTotal">0분</div>
     </div>
     <div class="today-row">
       <div class="today-row-left">
+        <div class="today-row-emoji row-walk">🚶</div>
+        <div><div class="today-row-name">걷기</div><div class="today-row-detail" id="walkDetail">0회</div></div>
+      </div>
+      <div class="today-row-time t-walk" id="walkTotal">0분</div>
+    </div>
+    <div class="today-row">
+      <div class="today-row-left">
         <div class="today-row-emoji row-sit">🪑</div>
-        <div><div class="today-row-name">앉기</div><div class="today-row-detail" id="sitDetail">0회 · 평균 0분</div></div>
+        <div><div class="today-row-name">앉기</div><div class="today-row-detail" id="sitDetail">0회</div></div>
       </div>
       <div class="today-row-time t-sit" id="sitTotal">0분</div>
     </div>
     <div class="today-row">
       <div class="today-row-left">
         <div class="today-row-emoji row-rest">🛌</div>
-        <div><div class="today-row-name">휴식</div><div class="today-row-detail" id="restDetail">0회 · 평균 0분</div></div>
+        <div><div class="today-row-name">휴식</div><div class="today-row-detail" id="restDetail">0회</div></div>
       </div>
       <div class="today-row-time t-rest" id="restTotal">0분</div>
     </div>
@@ -285,18 +294,20 @@ body.resting .progress-fill { background: linear-gradient(90deg, var(--rest-c2),
 <div class="toast" id="toast"></div>
 
 <script>
-const LIMITS = { stand: 20*60, sit: 30*60, rest: 60*60 };
+// 그룹별 한도: 서기+걷기 = active(20분), sit(30분), rest(60분)
+const LIMITS = { active: 20*60, sit: 30*60, rest: 60*60 };
 const SURGERY = new Date('2026-03-18T00:00:00');
-const STORE_KEY = 'recoveryTimer_v2';
-const HISTORY_KEY = 'recoveryHistory_v2';
+const STORE_KEY = 'recoveryTimer_v3';
+const HISTORY_KEY = 'recoveryHistory_v3';
 
 const ACTIONS = {
-  stand: { emoji:'🏃', name:'서기', cls:'standing', btnCls:'active-stand' },
-  sit:   { emoji:'🪑', name:'앉기', cls:'sitting',  btnCls:'active-sit' },
-  rest:  { emoji:'🛌', name:'휴식', cls:'resting',  btnCls:'active-rest' },
+  stand: { emoji:'🧍', name:'서기', cls:'standing', btnCls:'active-stand', group:'active' },
+  walk:  { emoji:'🚶', name:'걷기', cls:'walking',  btnCls:'active-walk',  group:'active' },
+  sit:   { emoji:'🪑', name:'앉기', cls:'sitting',  btnCls:'active-sit',   group:'sit' },
+  rest:  { emoji:'🛌', name:'휴식', cls:'resting',  btnCls:'active-rest',  group:'rest' },
 };
 
-let S = { current: null, startTime: null, alerted: false, timer: null };
+let S = { current: null, startTime: null, alertedGroup: null, timer: null };
 let history = {};
 
 const $ = id => document.getElementById(id);
@@ -336,15 +347,33 @@ function playAlert() {
 }
 function vib(p) { if (navigator.vibrate) navigator.vibrate(p); }
 
+// 그룹별 누적 시간 (현재 진행 중 포함)
+function getCumulativeForGroup(group) {
+  const today = history[todayKey()] || {};
+  let total = 0;
+  for (const [action, def] of Object.entries(ACTIONS)) {
+    if (def.group === group) {
+      total += (today[action]||[]).reduce((a,b)=>a+b, 0);
+    }
+  }
+  if (S.current && ACTIONS[S.current].group === group) {
+    total += Math.round((Date.now() - S.startTime) / 1000);
+  }
+  return total;
+}
+
 function startActivity(action) {
   if (S.current) stopActivity(false);
   S.current = action;
   S.startTime = Date.now();
-  S.alerted = false;
+  const group = ACTIONS[action].group;
+  const cumulative = getCumulativeForGroup(group);
+  // 이미 한도 넘었으면 알림 받은 상태로 시작
+  S.alertedGroup = (cumulative >= LIMITS[group]) ? group : null;
+
   document.body.className = ACTIONS[action].cls;
   $('statusEmoji').textContent = ACTIONS[action].emoji;
   $('statusName').textContent = ACTIONS[action].name + ' 중';
-  $('limitInfo').textContent = `권장 한도: ${LIMITS[action]/60}분`;
   $('stopBtn').disabled = false;
   document.querySelectorAll('.action-btn').forEach(b => b.className = 'action-btn');
   $(`btn${action.charAt(0).toUpperCase()+action.slice(1)}`).classList.add(ACTIONS[action].btnCls);
@@ -358,7 +387,7 @@ function stopActivity(showMsg = true) {
   const elapsed = Math.round((Date.now() - S.startTime) / 1000);
   if (elapsed >= 5) saveToHistory(S.current, elapsed);
   const action = S.current;
-  S.current = null; S.startTime = null; S.alerted = false;
+  S.current = null; S.startTime = null; S.alertedGroup = null;
   clearInterval(S.timer);
   document.body.className = '';
   $('statusEmoji').textContent = '⏸';
@@ -366,9 +395,10 @@ function stopActivity(showMsg = true) {
   $('timerDisplay').textContent = '00:00';
   $('timerSub').textContent = '활동을 선택해주세요';
   $('timerSub').className = 'timer-sub';
+  $('timerCumulative').textContent = '';
+  $('timerCumulative').className = 'timer-cumulative';
   $('progressFill').style.width = '0%';
   $('progressFill').classList.remove('over');
-  $('limitInfo').textContent = '서기 20분 · 앉기 30분 · 휴식 60분';
   $('stopBtn').disabled = true;
   document.querySelectorAll('.action-btn').forEach(b => b.className = 'action-btn');
   saveState();
@@ -388,37 +418,56 @@ function startTick() {
 function updateTick() {
   if (!S.current) return;
   const elapsed = Math.round((Date.now() - S.startTime) / 1000);
-  const limit = LIMITS[S.current];
-  const remaining = limit - elapsed;
+  const group = ACTIONS[S.current].group;
+  const cumulative = getCumulativeForGroup(group);
+  const limit = LIMITS[group];
+  const remaining = limit - cumulative;
+
+  $('timerDisplay').textContent = formatTime(elapsed);
+  $('timerSub').textContent = `이번 세션 ${formatTime(elapsed)}`;
+
+  let label;
+  if (group === 'active') label = '서기+걷기 누적';
+  else if (group === 'sit') label = '앉기 누적';
+  else label = '휴식 누적';
+
   if (remaining > 0) {
-    $('timerDisplay').textContent = formatTime(elapsed);
-    $('timerSub').textContent = `남은 시간 ${formatTime(remaining)}`;
-    $('timerSub').className = 'timer-sub';
-    $('progressFill').style.width = Math.min(100, (elapsed/limit)*100) + '%';
+    $('timerCumulative').textContent = `오늘 ${label} ${formatMin(cumulative)} / ${limit/60}분`;
+    $('timerCumulative').className = 'timer-cumulative';
+    $('progressFill').style.width = Math.min(100, (cumulative/limit)*100) + '%';
     $('progressFill').classList.remove('over');
   } else {
-    $('timerDisplay').textContent = formatTime(elapsed);
-    $('timerSub').textContent = `⚠ 권장 시간 ${formatTime(-remaining)} 초과`;
-    $('timerSub').className = 'timer-sub over';
+    $('timerCumulative').textContent = `오늘 ${label} ${formatMin(cumulative)} ⚠ ${formatMin(-remaining)} 초과`;
+    $('timerCumulative').className = 'timer-cumulative over';
     $('progressFill').style.width = '100%';
     $('progressFill').classList.add('over');
-    if (!S.alerted) {
-      S.alerted = true;
-      showAlert(S.current);
+    if (S.alertedGroup !== group) {
+      S.alertedGroup = group;
+      showAlert(group);
       playAlert();
       vib([300, 100, 300, 100, 500]);
     }
   }
 }
 
-function showAlert(action) {
+function showAlert(group) {
   const banner = $('alertBanner');
-  $('alertEmoji').textContent = ACTIONS[action].emoji;
-  $('alertTitle').textContent = `${ACTIONS[action].name} 권장 시간 도달`;
-  if (action === 'stand') $('alertSub').textContent = '이제 앉거나 누워서 쉬는 게 좋아요';
-  else if (action === 'sit') $('alertSub').textContent = '이제 누워서 충분히 쉬세요';
-  else $('alertSub').textContent = '충분히 쉬셨어요. 천천히 활동 시작해도 좋아요';
-  banner.className = 'alert show ' + action;
+  if (group === 'active') {
+    $('alertEmoji').textContent = '🧍';
+    $('alertTitle').textContent = `서기+걷기 누적 ${LIMITS.active/60}분 도달`;
+    $('alertSub').textContent = '이제 앉거나 누워서 쉬는 게 좋아요';
+    banner.className = 'alert show stand';
+  } else if (group === 'sit') {
+    $('alertEmoji').textContent = '🪑';
+    $('alertTitle').textContent = `앉기 누적 ${LIMITS.sit/60}분 도달`;
+    $('alertSub').textContent = '이제 누워서 충분히 쉬세요';
+    banner.className = 'alert show sit';
+  } else {
+    $('alertEmoji').textContent = '🛌';
+    $('alertTitle').textContent = `휴식 누적 ${LIMITS.rest/60}분 도달`;
+    $('alertSub').textContent = '충분히 쉬셨어요. 천천히 활동 시작해도 좋아요';
+    banner.className = 'alert show rest';
+  }
   setTimeout(() => banner.classList.remove('show'), 8000);
 }
 
@@ -433,7 +482,7 @@ function showToast(msg) {
 function saveState() {
   try {
     localStorage.setItem(STORE_KEY, JSON.stringify({
-      current: S.current, startTime: S.startTime, alerted: S.alerted,
+      current: S.current, startTime: S.startTime, alertedGroup: S.alertedGroup,
     }));
   } catch(e){}
 }
@@ -446,11 +495,10 @@ function loadState() {
     if (v.current && v.startTime) {
       S.current = v.current;
       S.startTime = v.startTime;
-      S.alerted = v.alerted || false;
+      S.alertedGroup = v.alertedGroup || null;
       document.body.className = ACTIONS[S.current].cls;
       $('statusEmoji').textContent = ACTIONS[S.current].emoji;
       $('statusName').textContent = ACTIONS[S.current].name + ' 중';
-      $('limitInfo').textContent = `권장 한도: ${LIMITS[S.current]/60}분`;
       $('stopBtn').disabled = false;
       $(`btn${S.current.charAt(0).toUpperCase()+S.current.slice(1)}`).classList.add(ACTIONS[S.current].btnCls);
       startTick();
@@ -467,21 +515,21 @@ function loadHistory() {
 
 function saveToHistory(action, seconds) {
   const key = todayKey();
-  if (!history[key]) history[key] = { stand:[], sit:[], rest:[] };
+  if (!history[key]) history[key] = { stand:[], walk:[], sit:[], rest:[] };
   history[key][action].push(seconds);
   try { localStorage.setItem(HISTORY_KEY, JSON.stringify(history)); } catch(e){}
 }
 
 function renderToday() {
   const key = todayKey();
-  const today = history[key] || { stand:[], sit:[], rest:[] };
-  ['stand','sit','rest'].forEach(action => {
+  const today = history[key] || { stand:[], walk:[], sit:[], rest:[] };
+  ['stand','walk','sit','rest'].forEach(action => {
     const arr = today[action] || [];
     const total = arr.reduce((a,b)=>a+b, 0);
     const count = arr.length;
     const avg = count>0 ? Math.round(total/count) : 0;
     $(`${action}Total`).textContent = formatHM(total);
-    $(`${action}Detail`).textContent = `${count}회 · 평균 ${formatMin(avg)}`;
+    $(`${action}Detail`).textContent = count>0 ? `${count}회 · 평균 ${formatMin(avg)}` : '0회';
   });
   $('todayCycles').textContent = `${(today.rest||[]).length} 사이클`;
 }
@@ -496,11 +544,13 @@ function renderHistory() {
   list.innerHTML = keys.map(k => {
     const day = history[k];
     const standT = (day.stand||[]).reduce((a,b)=>a+b,0);
+    const walkT = (day.walk||[]).reduce((a,b)=>a+b,0);
     const sitT = (day.sit||[]).reduce((a,b)=>a+b,0);
     const restT = (day.rest||[]).reduce((a,b)=>a+b,0);
-    const total = standT + sitT + restT;
+    const total = standT + walkT + sitT + restT;
     const cycles = (day.rest||[]).length;
     const standPct = total>0 ? (standT/total)*100 : 0;
+    const walkPct = total>0 ? (walkT/total)*100 : 0;
     const sitPct = total>0 ? (sitT/total)*100 : 0;
     const restPct = total>0 ? (restT/total)*100 : 0;
     const dateLabel = formatDateLabel(k);
@@ -512,13 +562,15 @@ function renderHistory() {
         </div>
         <div class="history-day-bars">
           <div class="bar-stand" style="width:${standPct}%"></div>
+          <div class="bar-walk" style="width:${walkPct}%"></div>
           <div class="bar-sit" style="width:${sitPct}%"></div>
           <div class="bar-rest" style="width:${restPct}%"></div>
         </div>
         <div class="history-day-times">
-          <span class="t-stand">🏃 ${formatHM(standT)}</span>
-          <span class="t-sit">🪑 ${formatHM(sitT)}</span>
-          <span class="t-rest">🛌 ${formatHM(restT)}</span>
+          <span class="t-stand">🧍${formatHM(standT)}</span>
+          <span class="t-walk">🚶${formatHM(walkT)}</span>
+          <span class="t-sit">🪑${formatHM(sitT)}</span>
+          <span class="t-rest">🛌${formatHM(restT)}</span>
         </div>
       </div>`;
   }).join('');
@@ -564,6 +616,7 @@ function bindAction(id, action) {
   btn.addEventListener('touchend', handler, { passive: false });
 }
 bindAction('btnStand', 'stand');
+bindAction('btnWalk', 'walk');
 bindAction('btnSit', 'sit');
 bindAction('btnRest', 'rest');
 
