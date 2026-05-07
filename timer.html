@@ -306,6 +306,61 @@ body.resting .progress-fill { background: linear-gradient(90deg, var(--rest-c2),
 .session-range { color: var(--text-dim); font-size: 11px; }
 .session-empty { color: var(--text-dim); font-size: 12px; padding: 8px 0; }
 
+/* 상세 기록 요약 */
+.detail-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.summary-item {
+  background: #f9f9fc;
+  border-radius: 12px;
+  padding: 12px 6px;
+  text-align: center;
+}
+.stand-sum { background: linear-gradient(135deg,#ffe5ec,#ffe9c8); }
+.walk-sum { background: linear-gradient(135deg,#d4f5e9,#c8f0e0); }
+.sit-sum { background: linear-gradient(135deg,#fff8e1,#ffe0b2); }
+.rest-sum { background: linear-gradient(135deg,#e3f2fd,#e8eaff); }
+.summary-emoji { font-size: 20px; margin-bottom: 4px; }
+.summary-time {
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px; font-weight: 800;
+}
+.summary-count {
+  font-size: 10px; color: var(--text-dim);
+  margin-top: 2px; font-weight: 600;
+}
+.timeline-title {
+  font-size: 13px; font-weight: 700;
+  margin-bottom: 10px;
+  color: var(--text);
+}
+.timeline {
+  display: flex; flex-direction: column; gap: 8px;
+}
+.tl-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: #f9f9fc;
+  border-left: 3px solid #ddd;
+}
+.tl-stand { border-left-color: var(--stand-c); background: linear-gradient(90deg,#fff5f0,#fafafa 30%); }
+.tl-walk { border-left-color: var(--walk-c); background: linear-gradient(90deg,#f0fff4,#fafafa 30%); }
+.tl-sit { border-left-color: var(--sit-c); background: linear-gradient(90deg,#fffbf0,#fafafa 30%); }
+.tl-rest { border-left-color: var(--rest-c); background: linear-gradient(90deg,#f0f5ff,#fafafa 30%); }
+.tl-emoji { font-size: 22px; flex-shrink: 0; }
+.tl-body { flex: 1; min-width: 0; }
+.tl-top { display: flex; justify-content: space-between; align-items: baseline; }
+.tl-name { font-size: 13px; font-weight: 700; }
+.tl-duration {
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px; font-weight: 800;
+}
+.tl-range { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+
 /* 클릭 가능한 카드 표시 */
 .history-day { cursor: pointer; transition: transform 0.2s; touch-action: manipulation; }
 .history-day:active { transform: scale(0.98); }
@@ -812,16 +867,36 @@ function updateDayCounter() {
   $('dateText').textContent = `${now.getMonth()+1}월 ${now.getDate()}일`;
 }
 
+// 백그라운드 복귀 시 타이머 재시작 (안드로이드 setInterval 정지 대응)
+function resyncTimer() {
+  if (S.current) {
+    clearInterval(S.timer);
+    updateTick();
+    startTick();
+  }
+}
+
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible' && S.current) updateTick();
-  else saveState();
+  if (document.visibilityState === 'visible') {
+    resyncTimer();
+  } else {
+    saveState();
+  }
+});
+window.addEventListener('focus', resyncTimer);
+window.addEventListener('pageshow', (e) => {
+  if (S.current) resyncTimer();
 });
 window.addEventListener('pagehide', saveState);
 window.addEventListener('beforeunload', saveState);
-window.addEventListener('pageshow', (e) => {
-  if (e.persisted && S.current) { clearInterval(S.timer); startTick(); }
-});
-setInterval(() => { if (S.current) saveState(); }, 5000);
+
+// 매 초 dom 갱신 강제 (interval drift 방지)
+setInterval(() => {
+  if (S.current) {
+    updateTick(); // setInterval이 죽어도 이게 살아있을 수 있음
+    saveState();
+  }
+}, 1000);
 
 // 한도 표시 업데이트
 function renderLimitInfo() {
@@ -850,49 +925,82 @@ function formatHHMM(ts) {
   return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
 }
 
-// 상세 기록 보기
+// 상세 기록 보기 - 시간순
 function showDetail(dateKey) {
   const day = history[dateKey] || { stand:[], walk:[], sit:[], rest:[] };
   const label = formatDateLabel(dateKey);
   $('detailTitle').textContent = `📋 ${label} 상세 기록`;
 
   const body = $('detailBody');
-  let html = '';
 
+  // 모든 세션을 한 배열로 모으기
+  const allSessions = [];
+  ['stand','walk','sit','rest'].forEach(action => {
+    (day[action]||[]).forEach(rec => {
+      allSessions.push({
+        action,
+        sec: getSec(rec),
+        start: (typeof rec === 'object' && rec.start) ? rec.start : null,
+        end: (typeof rec === 'object' && rec.end) ? rec.end : null,
+      });
+    });
+  });
+
+  // 합계 요약
+  const totals = { stand:0, walk:0, sit:0, rest:0 };
+  allSessions.forEach(s => totals[s.action] += s.sec);
+
+  let summaryHtml = '<div class="detail-summary">';
   ['stand','walk','sit','rest'].forEach(action => {
     const def = ACTIONS[action];
-    const records = day[action] || [];
-    const total = records.reduce((a,r)=>a+getSec(r), 0);
-
-    html += `<div class="session-group">
-      <div class="session-group-title">
-        <span>${def.emoji} ${def.name}</span>
-        <span style="color:var(--text-dim);font-weight:500">${records.length}회 · 총 ${formatHM(total)}</span>
-      </div>`;
-
-    if (records.length === 0) {
-      html += `<div class="session-empty">기록 없음</div>`;
-    } else {
-      // 시간 순으로 정렬
-      const sorted = [...records].map((r,i) => ({...r, idx:i, _sec:getSec(r)}))
-        .sort((a,b) => (a.start||0) - (b.start||0));
-
-      sorted.forEach(rec => {
-        const sec = rec._sec;
-        let timeRange = '시간 정보 없음';
-        if (rec.start && rec.end) {
-          timeRange = `${formatHHMM(rec.start)} ~ ${formatHHMM(rec.end)}`;
-        }
-        html += `<div class="session-item">
-          <div>
-            <div class="session-time">${formatTime(sec)}</div>
-            <div class="session-range">${timeRange}</div>
-          </div>
-        </div>`;
-      });
-    }
-    html += `</div>`;
+    const count = allSessions.filter(s => s.action === action).length;
+    summaryHtml += `<div class="summary-item ${action}-sum">
+      <div class="summary-emoji">${def.emoji}</div>
+      <div class="summary-text">
+        <div class="summary-time">${formatHM(totals[action])}</div>
+        <div class="summary-count">${count}회</div>
+      </div>
+    </div>`;
   });
+  summaryHtml += '</div>';
+
+  if (allSessions.length === 0) {
+    body.innerHTML = summaryHtml + '<div class="session-empty" style="text-align:center;padding:24px">기록이 없어요</div>';
+    $('detailModal').classList.add('show');
+    return;
+  }
+
+  // 시간순 정렬 (시작 시간 없는 건 뒤로)
+  allSessions.sort((a, b) => {
+    if (!a.start && !b.start) return 0;
+    if (!a.start) return 1;
+    if (!b.start) return -1;
+    return a.start - b.start;
+  });
+
+  let html = summaryHtml + '<div class="timeline-title">⏱ 시간순 기록</div><div class="timeline">';
+
+  allSessions.forEach(s => {
+    const def = ACTIONS[s.action];
+    let timeRange;
+    if (s.start && s.end) {
+      timeRange = `${formatHHMM(s.start)} ~ ${formatHHMM(s.end)}`;
+    } else {
+      timeRange = '시간 정보 없음';
+    }
+
+    html += `<div class="tl-item tl-${s.action}">
+      <div class="tl-emoji">${def.emoji}</div>
+      <div class="tl-body">
+        <div class="tl-top">
+          <span class="tl-name">${def.name}</span>
+          <span class="tl-duration">${formatTime(s.sec)}</span>
+        </div>
+        <div class="tl-range">${timeRange}</div>
+      </div>
+    </div>`;
+  });
+  html += '</div>';
 
   body.innerHTML = html;
   $('detailModal').classList.add('show');
