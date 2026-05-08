@@ -625,10 +625,19 @@ body.resting .progress-fill { background: linear-gradient(90deg, var(--rest-c2),
         </div>
       </div>
 
-      <div class="reset-section">
-        <div class="reset-title">🗑 데이터 초기화</div>
-        <button class="reset-btn reset-today" id="resetTodayBtn">오늘 기록만 삭제</button>
-        <button class="reset-btn reset-all" id="resetAllBtn">전체 기록 삭제</button>
+      <div class="backup-section">
+        <div class="backup-title">💾 데이터 백업</div>
+        <button class="backup-btn" id="exportBtn">📥 데이터 내보내기 (.json)</button>
+        <button class="backup-btn" id="importBtn">📤 데이터 가져오기</button>
+        <input type="file" id="importFile" accept=".json" style="display:none">
+        <div class="backup-info">JSON 파일로 저장하면 다른 기기에서도 복원 가능</div>
+      </div>
+
+      <div class="danger-section">
+        <div class="danger-title">⚠️ 데이터 관리</div>
+        <button class="danger-btn" id="clearTodayBtn">오늘 기록만 삭제</button>
+        <button class="danger-btn danger-strong" id="clearAllBtn">전체 데이터 초기화</button>
+        <div class="danger-info">초기화하면 복구할 수 없어요</div>
       </div>
     </div>
   </div>
@@ -768,6 +777,7 @@ function stopActivity(showMsg = true) {
   const action = S.current;
   S.current = null; S.startTime = null; S.alertedGroup = null;
   clearInterval(S.timer);
+  clearState(); // 명시적 정지
   document.body.className = '';
   $('statusEmoji').textContent = '⏸';
   $('statusName').textContent = '대기 중';
@@ -876,18 +886,43 @@ function showToast(msg) {
 
 function saveState() {
   try {
-    localStorage.setItem(STORE_KEY, JSON.stringify({
-      current: S.current, startTime: S.startTime, alertedGroup: S.alertedGroup,
-    }));
+    // 활동 중일 때만 저장 (null로 덮어쓰지 않음)
+    if (S.current && S.startTime) {
+      localStorage.setItem(STORE_KEY, JSON.stringify({
+        current: S.current,
+        startTime: S.startTime,
+        alertedGroup: S.alertedGroup,
+        savedAt: Date.now(),
+      }));
+    } else {
+      // 명시적 정지 상태
+      localStorage.removeItem(STORE_KEY);
+    }
   } catch(e){}
+}
+
+// 명시적 클리어용
+function clearState() {
+  try { localStorage.removeItem(STORE_KEY); } catch(e){}
 }
 
 function loadState() {
   try {
     const raw = localStorage.getItem(STORE_KEY);
-    if (!raw) return;
+    if (!raw) {
+      console.log('[Timer] 저장된 활동 없음');
+      return;
+    }
     const v = JSON.parse(raw);
-    if (v.current && v.startTime) {
+    console.log('[Timer] 로드:', v);
+    if (v.current && v.startTime && ACTIONS[v.current]) {
+      const elapsed = Math.round((Date.now() - v.startTime) / 1000);
+      // 24시간 이상 지난 데이터는 무시 (다음 날 자동 정지)
+      if (elapsed > 24 * 3600) {
+        console.log('[Timer] 너무 오래된 활동 무시:', elapsed, '초');
+        clearState();
+        return;
+      }
       S.current = v.current;
       S.startTime = v.startTime;
       S.alertedGroup = v.alertedGroup || null;
@@ -895,10 +930,15 @@ function loadState() {
       $('statusEmoji').textContent = ACTIONS[S.current].emoji;
       $('statusName').textContent = ACTIONS[S.current].name + ' 중';
       $('stopBtn').disabled = false;
-      $(`btn${S.current.charAt(0).toUpperCase()+S.current.slice(1)}`).classList.add(ACTIONS[S.current].btnCls);
+      const btnId = `btn${S.current.charAt(0).toUpperCase()+S.current.slice(1)}`;
+      const btn = $(btnId);
+      if (btn) btn.classList.add(ACTIONS[S.current].btnCls);
       startTick();
+      console.log('[Timer] 복원 완료:', S.current, formatTime(elapsed));
     }
-  } catch(e){}
+  } catch(e){
+    console.error('[Timer] 로드 실패:', e);
+  }
 }
 
 function loadHistory() {
@@ -1230,8 +1270,16 @@ function deleteRecord(dateKey, action, startTs, sec) {
   }
 }
 
+// 안전한 이벤트 바인딩 (요소 없으면 무시)
+function safeOn(id, event, handler, opts) {
+  const el = $(id);
+  if (el) el.addEventListener(event, handler, opts);
+  else console.warn('[Timer] 요소 없음:', id);
+}
+
 function bindAction(id, action) {
   const btn = $(id);
+  if (!btn) { console.warn('[Timer] 버튼 없음:', id); return; }
   const handler = (e) => { if (e) e.preventDefault(); startActivity(action); };
   btn.addEventListener('click', handler);
   btn.addEventListener('touchend', handler, { passive: false });
@@ -1245,7 +1293,7 @@ const stopHandler = (e) => { if (e) e.preventDefault(); stopActivity(true); };
 $('stopBtn').addEventListener('click', stopHandler);
 $('stopBtn').addEventListener('touchend', stopHandler, { passive: false });
 
-$('alertClose').addEventListener('click', () => $('alertBanner').classList.remove('show'));
+safeOn('alertClose', 'click', () => $('alertBanner').classList.remove('show'));
 
 // 데이터 초기화
 function resetToday() {
@@ -1269,8 +1317,8 @@ function resetToday() {
     document.querySelectorAll('.action-btn').forEach(b => b.className = 'action-btn');
   }
 
-  // 데이터 내보내기
-$('exportBtn').addEventListener('click', () => {
+  // 데이터 내보내기 (HTML에 버튼 있으면 동작)
+safeOn('exportBtn', 'click', () => {
   const data = {
     version: 'recovery-timer-v3',
     exportedAt: new Date().toISOString(),
@@ -1290,8 +1338,8 @@ $('exportBtn').addEventListener('click', () => {
 });
 
 // 데이터 가져오기
-$('importBtn').addEventListener('click', () => $('importFile').click());
-$('importFile').addEventListener('change', (e) => {
+safeOn('importBtn', 'click', () => { const f = $('importFile'); if (f) f.click(); });
+safeOn('importFile', 'change', (e) => {
   const file = e.target.files[0];
   if (!file) return;
   const reader = new FileReader();
@@ -1388,14 +1436,16 @@ $('resetAllBtn').addEventListener('click', resetAllHandler);
 $('resetAllBtn').addEventListener('touchend', resetAllHandler, { passive: false });
 
 // 설정 모달 열기/닫기
-$('settingsBtn').addEventListener('click', () => $('settingsModal').classList.add('show'));
-$('settingsClose').addEventListener('click', () => $('settingsModal').classList.remove('show'));
-$('settingsModal').addEventListener('click', (e) => {
+safeOn('settingsBtn', 'click', () => $('settingsModal').classList.add('show'));
+safeOn('settingsClose', 'click', () => $('settingsModal').classList.remove('show'));
+safeOn('settingsModal', 'click', (e) => {
   if (e.target === $('settingsModal')) $('settingsModal').classList.remove('show');
 });
 
 // 스테퍼 버튼들
-document.querySelectorAll('.step-btn').forEach(btn => {
+// 스테퍼 버튼들 (safe)
+const stepBtns = document.querySelectorAll('.step-btn');
+stepBtns.forEach(btn => {
   const handler = (e) => {
     if (e) e.preventDefault();
     changeLimit(btn.dataset.key, parseInt(btn.dataset.d));
@@ -1405,13 +1455,13 @@ document.querySelectorAll('.step-btn').forEach(btn => {
 });
 
 // 상세 기록 모달
-$('detailClose').addEventListener('click', () => $('detailModal').classList.remove('show'));
-$('detailModal').addEventListener('click', (e) => {
+safeOn('detailClose', 'click', () => $('detailModal').classList.remove('show'));
+safeOn('detailModal', 'click', (e) => {
   if (e.target === $('detailModal')) $('detailModal').classList.remove('show');
 });
 
 // 개별 기록 삭제 (위임)
-$('detailBody').addEventListener('click', (e) => {
+safeOn('detailBody', 'click', (e) => {
   const delBtn = e.target.closest('.tl-delete');
   if (delBtn) {
     e.stopPropagation();
@@ -1425,12 +1475,14 @@ $('detailBody').addEventListener('click', (e) => {
     }
   }
 });
+// (위 detailBody 클로저 끝)
 
 // 오늘 카드 클릭 → 상세
-document.querySelector('.today-card').addEventListener('click', () => showDetail(todayKey()));
+const todayCard = document.querySelector('.today-card');
+if (todayCard) todayCard.addEventListener('click', () => showDetail(todayKey()));
 
-// 데이터 내보내기
-$('exportBtn').addEventListener('click', () => {
+// 데이터 내보내기 (HTML에 버튼 있으면 동작)
+safeOn('exportBtn', 'click', () => {
   const data = {
     version: 'recovery-timer-v3',
     exportedAt: new Date().toISOString(),
@@ -1450,8 +1502,8 @@ $('exportBtn').addEventListener('click', () => {
 });
 
 // 데이터 가져오기
-$('importBtn').addEventListener('click', () => $('importFile').click());
-$('importFile').addEventListener('change', (e) => {
+safeOn('importBtn', 'click', () => { const f = $('importFile'); if (f) f.click(); });
+safeOn('importFile', 'change', (e) => {
   const file = e.target.files[0];
   if (!file) return;
   const reader = new FileReader();
@@ -1494,7 +1546,7 @@ $('importFile').addEventListener('change', (e) => {
 });
 
 // 오늘 기록 삭제
-$('clearTodayBtn').addEventListener('click', () => {
+safeOn('clearTodayBtn', 'click', () => {
   const key = todayKey();
   const today = history[key];
   if (!today || (!today.stand?.length && !today.walk?.length && !today.sit?.length && !today.rest?.length)) {
@@ -1528,7 +1580,17 @@ $('clearTodayBtn').addEventListener('click', () => {
 });
 
 // 전체 초기화
-$('clearAllBtn').addEventListener('click', () => {
+// resetTodayBtn (구버전 호환)
+safeOn('resetTodayBtn', 'click', () => {
+  const btn = $('clearTodayBtn');
+  if (btn) btn.click();
+});
+safeOn('resetAllBtn', 'click', () => {
+  const btn = $('clearAllBtn');
+  if (btn) btn.click();
+});
+
+safeOn('clearAllBtn', 'click', () => {
   if (confirm('⚠️ 전체 데이터를 모두 삭제할까요?\n\n· 모든 기록 (오늘 포함)\n· 진행 중인 활동\n· 사이클 통계\n\n시간 설정과 수술 날짜는 유지됩니다.')) {
     if (confirm('정말 삭제하시겠어요?\n복구할 수 없습니다.')) {
       // 진행 중 정지
@@ -1560,7 +1622,7 @@ $('clearAllBtn').addEventListener('click', () => {
 });
 
 // 히스토리 카드 위임 클릭
-$('historyList').addEventListener('click', (e) => {
+safeOn('historyList', 'click', (e) => {
   const day = e.target.closest('.history-day');
   if (day && day.dataset.key) showDetail(day.dataset.key);
 });
