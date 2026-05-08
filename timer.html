@@ -828,6 +828,29 @@ loadState();
 renderToday();
 renderHistory();
 renderLimitInfo();
+
+// URL 파라미터 처리 (단축어/Tasker/NFC 연동용)
+// 사용 예: timer.html?action=walk, timer.html?action=stand, timer.html?stop
+function handleUrlParams() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const action = params.get('action');
+    const shouldStop = params.has('stop');
+    
+    if (shouldStop) {
+      stopActivity(true);
+    } else if (action && ACTIONS[action]) {
+      startActivity(action);
+    }
+    
+    // URL 파라미터 제거 (히스토리에 남지 않게, 새로고침 시 재실행 방지)
+    if (action || shouldStop) {
+      const cleanUrl = window.location.pathname;
+      window.history.replaceState({}, '', cleanUrl);
+    }
+  } catch(e) { console.error('URL param error:', e); }
+}
+handleUrlParams();
 </script>
 </body>
 </html>
