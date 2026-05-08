@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>회복 타이머</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800&family=Nunito:wght@400;700;800&display=swap');
@@ -68,6 +71,12 @@ body.resting { background: var(--rest-bg); }
   letter-spacing: 0.5px;
 }
 .header-date { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+.version-tag {
+  font-size: 9px; color: #ccc;
+  margin-top: 2px;
+  font-family: 'Nunito', sans-serif;
+  letter-spacing: 0.5px;
+}
 .status-card {
   background: white; border-radius: var(--radius);
   padding: 28px 20px; box-shadow: 0 4px 20px var(--shadow);
@@ -506,6 +515,7 @@ body.resting .progress-fill { background: linear-gradient(90deg, var(--rest-c2),
       <div class="day-counter" id="dayCounter">🌿 수술 후 50일째</div>
       <div class="week-counter" id="weekCounter">8주차 1일</div>
       <div class="header-date" id="dateText">오늘</div>
+      <div class="version-tag" id="versionTag">v1.5</div>
     </div>
     <button class="settings-btn" id="settingsBtn">⚙️</button>
   </div>
