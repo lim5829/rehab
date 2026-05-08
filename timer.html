@@ -382,6 +382,8 @@ function getSessionElapsed() {
 }
 
 function startActivity(action) {
+  // 같은 활동이 이미 진행 중이면 무시 (실수 탭 방지)
+  if (S.current === action) return;
   if (S.current) stopActivity(false);
   S.current = action;
   S.startTime = Date.now();
@@ -748,20 +750,40 @@ function resync() {
   }
 }
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible') resync();
-  else saveState();
+  if (document.visibilityState === 'visible') {
+    resync();
+  } else {
+    saveState();
+  }
 });
 window.addEventListener('focus', resync);
-window.addEventListener('pageshow', () => { if (S.current) resync(); });
+window.addEventListener('pageshow', (e) => {
+  // bfcache에서 복원된 경우에도 무조건 resync
+  if (S.current) resync();
+  // localStorage에 저장된 세션이 있으면 복원
+  if (!S.current) loadState();
+});
 window.addEventListener('pagehide', saveState);
 window.addEventListener('beforeunload', saveState);
-setInterval(() => { if (S.current) { saveState(); updateTick(); } }, 5000);
+// 주기적 저장 + 화면 갱신 (3초마다 - 더 짧게)
+setInterval(() => { if (S.current) { saveState(); updateTick(); } }, 3000);
 
-// 이벤트 바인딩
+// 이벤트 바인딩 - 중복 발생 방지 (click 또는 touchend 중 하나만 처리)
+let _lastTap = 0;
+function debounceTap(fn) {
+  return (e) => {
+    if (e) e.preventDefault();
+    const now = Date.now();
+    if (now - _lastTap < 350) return; // 350ms 내 중복 탭 무시
+    _lastTap = now;
+    fn();
+  };
+}
+
 function bindBtn(id, action) {
   const btn = $(id);
   if (!btn) return;
-  const h = (e) => { if (e) e.preventDefault(); startActivity(action); };
+  const h = debounceTap(() => startActivity(action));
   btn.addEventListener('click', h);
   btn.addEventListener('touchend', h, { passive: false });
 }
@@ -771,7 +793,7 @@ bindBtn('btnSit', 'sit');
 bindBtn('btnRest', 'rest');
 
 const stopBtn = $('stopBtn');
-const stopH = (e) => { if (e) e.preventDefault(); stopActivity(true); };
+const stopH = debounceTap(() => stopActivity(true));
 stopBtn.addEventListener('click', stopH);
 stopBtn.addEventListener('touchend', stopH, { passive: false });
 
@@ -787,7 +809,7 @@ $('detailModal').addEventListener('click', (e) => {
 });
 
 document.querySelectorAll('.step-btn').forEach(btn => {
-  const h = (e) => { if (e) e.preventDefault(); changeLimit(btn.dataset.key, parseInt(btn.dataset.d)); };
+  const h = debounceTap(() => changeLimit(btn.dataset.key, parseInt(btn.dataset.d)));
   btn.addEventListener('click', h);
   btn.addEventListener('touchend', h, { passive: false });
 });
