@@ -29,63 +29,19 @@ body.standing { background: var(--stand-bg); }
 body.walking { background: var(--walk-bg); }
 body.sitting { background: var(--sit-bg); }
 body.resting { background: var(--rest-bg); }
-.blob {
-  position: fixed; border-radius: 50%; filter: blur(70px);
-  opacity: 0.3; pointer-events: none; z-index: 0;
-}
-.blob-1 { width: 280px; height: 280px; top: -80px; right: -60px;
-  background: radial-gradient(circle, #ffb3c6, #ffd6a5); }
-.blob-2 { width: 220px; height: 220px; bottom: -40px; left: -40px;
-  background: radial-gradient(circle, #a0d8ef, #c3b1e1); }
-.container {
-  position: relative; z-index: 1;
-  max-width: 420px; margin: 0 auto;
-  display: flex; flex-direction: column; gap: 16px;
-}
-.header { display: flex; align-items: center; justify-content: space-between; padding: 4px; }
-.settings-btn {
-  width: 44px; height: 44px;
-  border-radius: 50%;
-  border: none;
-  background: white;
-  box-shadow: 0 2px 12px var(--shadow);
-  font-size: 18px;
-  cursor: pointer;
-  touch-action: manipulation;
-  transition: transform 0.2s;
-}
-.settings-btn:active { transform: scale(0.9); }
-
-.day-counter {
-  font-family: 'Nunito', sans-serif;
-  font-size: 20px; font-weight: 800;
-  background: linear-gradient(135deg, #ff6b9d, #5b7fff);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-.week-counter {
-  font-family: 'Nunito', sans-serif;
-  font-size: 13px; font-weight: 700;
-  color: var(--text-dim);
-  margin-top: 2px;
-  letter-spacing: 0.5px;
-}
+.blob { position: fixed; border-radius: 50%; filter: blur(70px); opacity: 0.3; pointer-events: none; z-index: 0; }
+.blob-1 { width: 280px; height: 280px; top: -80px; right: -60px; background: radial-gradient(circle, #ffb3c6, #ffd6a5); }
+.blob-2 { width: 220px; height: 220px; bottom: -40px; left: -40px; background: radial-gradient(circle, #a0d8ef, #c3b1e1); }
+.container { position: relative; z-index: 1; max-width: 420px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+.header { display: flex; align-items: flex-start; justify-content: space-between; padding: 4px; }
+.day-counter { font-family: 'Nunito', sans-serif; font-size: 20px; font-weight: 800; background: linear-gradient(135deg, #ff6b9d, #5b7fff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.week-counter { font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 700; color: var(--text-dim); margin-top: 2px; letter-spacing: 0.5px; }
 .header-date { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
-.version-tag {
-  font-size: 9px; color: #ccc;
-  margin-top: 2px;
-  font-family: 'Nunito', sans-serif;
-  letter-spacing: 0.5px;
-}
-.status-card {
-  background: white; border-radius: var(--radius);
-  padding: 28px 20px; box-shadow: 0 4px 20px var(--shadow);
-  text-align: center; position: relative; overflow: hidden;
-}
-.status-card::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
-  background: #ddd; transition: background 0.5s;
-}
+.version-tag { font-size: 9px; color: #ccc; margin-top: 2px; font-family: 'Nunito', sans-serif; }
+.settings-btn { width: 44px; height: 44px; border-radius: 50%; border: none; background: white; box-shadow: 0 2px 12px var(--shadow); font-size: 18px; cursor: pointer; touch-action: manipulation; transition: transform 0.2s; }
+.settings-btn:active { transform: scale(0.9); }
+.status-card { background: white; border-radius: var(--radius); padding: 28px 20px; box-shadow: 0 4px 20px var(--shadow); text-align: center; position: relative; overflow: hidden; }
+.status-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: #ddd; transition: background 0.5s; }
 body.standing .status-card::before { background: linear-gradient(90deg, var(--stand-c2), var(--stand-c)); }
 body.walking .status-card::before { background: linear-gradient(90deg, var(--walk-c2), var(--walk-c)); }
 body.sitting .status-card::before { background: linear-gradient(90deg, var(--sit-c2), var(--sit-c)); }
@@ -97,11 +53,7 @@ body.standing .status-name { color: var(--stand-c); }
 body.walking .status-name { color: var(--walk-c); }
 body.sitting .status-name { color: var(--sit-c); }
 body.resting .status-name { color: var(--rest-c); }
-.timer-display {
-  font-family: 'Nunito', sans-serif;
-  font-size: 56px; font-weight: 800;
-  letter-spacing: -2px; line-height: 1; margin-bottom: 6px;
-}
+.timer-display { font-family: 'Nunito', sans-serif; font-size: 56px; font-weight: 800; letter-spacing: -2px; line-height: 1; margin-bottom: 6px; }
 body.standing .timer-display { color: var(--stand-c); }
 body.walking .timer-display { color: var(--walk-c); }
 body.sitting .timer-display { color: var(--sit-c); }
@@ -109,27 +61,15 @@ body.resting .timer-display { color: var(--rest-c); }
 .timer-sub { font-size: 13px; color: var(--text-dim); margin-bottom: 4px; }
 .timer-cumulative { font-size: 12px; color: var(--text-dim); margin-bottom: 14px; font-weight: 500; }
 .timer-cumulative.over { color: #e53e3e; font-weight: 700; }
-.progress-bar {
-  width: 100%; height: 6px; background: var(--border);
-  border-radius: 100px; overflow: hidden; margin-bottom: 16px;
-}
-.progress-fill { height: 100%; border-radius: 100px;
-  transition: width 1s linear, background 0.5s; background: #ddd; }
+.progress-bar { width: 100%; height: 6px; background: var(--border); border-radius: 100px; overflow: hidden; margin-bottom: 16px; }
+.progress-fill { height: 100%; border-radius: 100px; transition: width 1s linear, background 0.5s; background: #ddd; }
 body.standing .progress-fill { background: linear-gradient(90deg, var(--stand-c2), var(--stand-c)); }
 body.walking .progress-fill { background: linear-gradient(90deg, var(--walk-c2), var(--walk-c)); }
 body.sitting .progress-fill { background: linear-gradient(90deg, var(--sit-c2), var(--sit-c)); }
 body.resting .progress-fill { background: linear-gradient(90deg, var(--rest-c2), var(--rest-c)); }
 .progress-fill.over { background: linear-gradient(90deg, #ff6b6b, #e53e3e) !important; }
 .action-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; }
-.action-btn {
-  padding: 14px 4px; border-radius: var(--radius-sm);
-  border: 2px solid var(--border); background: white;
-  cursor: pointer; display: flex; flex-direction: column;
-  align-items: center; gap: 4px;
-  font-family: 'Noto Sans KR', sans-serif;
-  font-weight: 700; color: var(--text-dim);
-  transition: all 0.2s; touch-action: manipulation;
-}
+.action-btn { padding: 14px 4px; border-radius: var(--radius-sm); border: 2px solid var(--border); background: white; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; font-family: 'Noto Sans KR', sans-serif; font-weight: 700; color: var(--text-dim); transition: all 0.2s; touch-action: manipulation; }
 .action-btn:active { transform: scale(0.96); }
 .action-btn.active-stand { background: linear-gradient(135deg, var(--stand-c2), var(--stand-c)); color: white; border-color: transparent; box-shadow: 0 4px 16px rgba(255,107,157,0.35); }
 .action-btn.active-walk { background: linear-gradient(135deg, var(--walk-c2), var(--walk-c)); color: white; border-color: transparent; box-shadow: 0 4px 16px rgba(0,184,148,0.35); }
@@ -137,78 +77,40 @@ body.resting .progress-fill { background: linear-gradient(90deg, var(--rest-c2),
 .action-btn.active-rest { background: linear-gradient(135deg, var(--rest-c2), var(--rest-c)); color: white; border-color: transparent; box-shadow: 0 4px 16px rgba(91,127,255,0.35); }
 .action-emoji { font-size: 22px; line-height: 1; }
 .action-name { font-size: 12px; }
-.stop-btn {
-  width: 100%; padding: 14px;
-  border-radius: var(--radius-sm);
-  border: 1.5px solid var(--border);
-  background: white; color: var(--text-dim);
-  font-family: 'Noto Sans KR', sans-serif;
-  font-size: 14px; font-weight: 600;
-  cursor: pointer; touch-action: manipulation; transition: all 0.2s;
-}
+.stop-btn { width: 100%; padding: 14px; border-radius: var(--radius-sm); border: 1.5px solid var(--border); background: white; color: var(--text-dim); font-family: 'Noto Sans KR', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; touch-action: manipulation; transition: all 0.2s; }
 .stop-btn:active { transform: scale(0.98); background: #f5f5fa; }
 .stop-btn:disabled { opacity: 0.4; }
-.today-card, .history-card {
-  background: white; border-radius: var(--radius);
-  padding: 20px; box-shadow: 0 4px 20px var(--shadow);
-}
-.card-title {
-  font-family: 'Nunito', sans-serif;
-  font-size: 14px; font-weight: 800; color: var(--text);
-  margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between;
-}
+.today-card, .history-card { background: white; border-radius: var(--radius); padding: 20px; box-shadow: 0 4px 20px var(--shadow); }
+.card-title { font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 800; color: var(--text); margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; }
 .card-title-sub { font-size: 11px; color: var(--text-dim); font-weight: 500; }
-.today-row {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 10px 0; border-bottom: 1px solid #f5f5fa;
-}
+.today-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f5f5fa; }
 .today-row:last-child { border-bottom: none; }
 .today-row-left { display: flex; align-items: center; gap: 12px; }
-.today-row-emoji {
-  width: 36px; height: 36px; border-radius: 10px;
-  display: flex; align-items: center; justify-content: center; font-size: 18px;
-}
+.today-row-emoji { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
 .row-stand { background: linear-gradient(135deg, #ffe5ec, #ffe9c8); }
 .row-walk { background: linear-gradient(135deg, #d4f5e9, #c8f0e0); }
 .row-sit { background: linear-gradient(135deg, #fff8e1, #ffe0b2); }
 .row-rest { background: linear-gradient(135deg, #e3f2fd, #e8eaff); }
 .today-row-name { font-size: 14px; font-weight: 600; }
 .today-row-detail { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
-.today-row-time {
-  font-family: 'Nunito', sans-serif;
-  font-size: 18px; font-weight: 800;
-}
+.today-row-time { font-family: 'Nunito', sans-serif; font-size: 18px; font-weight: 800; }
 .t-stand { color: var(--stand-c); }
 .t-walk { color: var(--walk-c); }
 .t-sit { color: var(--sit-c); }
 .t-rest { color: var(--rest-c); }
-.history-list {
-  display: flex; flex-direction: column; gap: 10px;
-  max-height: 320px; overflow-y: auto;
-}
+.history-list { display: flex; flex-direction: column; gap: 10px; max-height: 320px; overflow-y: auto; }
 .history-empty { text-align: center; color: var(--text-dim); font-size: 13px; padding: 20px 0; }
 .history-day { background: #f9f9fc; border-radius: 12px; padding: 12px 14px; }
 .history-day-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
 .history-day-date { font-size: 13px; font-weight: 700; }
 .history-day-cycles { font-size: 11px; color: var(--text-dim); }
-.history-day-bars {
-  display: flex; height: 8px; border-radius: 100px; overflow: hidden;
-  background: #ededf5; margin-bottom: 6px;
-}
+.history-day-bars { display: flex; height: 8px; border-radius: 100px; overflow: hidden; background: #ededf5; margin-bottom: 6px; }
 .bar-stand { background: linear-gradient(90deg, var(--stand-c2), var(--stand-c)); }
 .bar-walk { background: linear-gradient(90deg, var(--walk-c2), var(--walk-c)); }
 .bar-sit { background: linear-gradient(90deg, var(--sit-c2), var(--sit-c)); }
 .bar-rest { background: linear-gradient(90deg, var(--rest-c2), var(--rest-c)); }
 .history-day-times { display: flex; justify-content: space-between; font-size: 10px; font-weight: 600; }
-.alert {
-  position: fixed; top: 16px; left: 16px; right: 16px;
-  background: white; padding: 16px 20px;
-  border-radius: var(--radius-sm); box-shadow: 0 8px 32px rgba(0,0,0,0.15);
-  z-index: 100; transform: translateY(-200px);
-  transition: transform 0.4s ease;
-  display: flex; align-items: center; gap: 12px;
-  border-left: 4px solid #ddd; max-width: 420px; margin: 0 auto;
-}
+.alert { position: fixed; top: 16px; left: 16px; right: 16px; background: white; padding: 16px 20px; border-radius: var(--radius-sm); box-shadow: 0 8px 32px rgba(0,0,0,0.15); z-index: 100; transform: translateY(-200px); transition: transform 0.4s ease; display: flex; align-items: center; gap: 12px; border-left: 4px solid #ddd; max-width: 420px; margin: 0 auto; }
 .alert.show { transform: translateY(0); }
 .alert.stand { border-left-color: var(--stand-c); }
 .alert.walk { border-left-color: var(--walk-c); }
@@ -218,258 +120,39 @@ body.resting .progress-fill { background: linear-gradient(90deg, var(--rest-c2),
 .alert-text { flex: 1; }
 .alert-title { font-size: 14px; font-weight: 700; }
 .alert-sub { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
-.alert-close {
-  width: 28px; height: 28px; border: none; background: #f5f5fa;
-  border-radius: 50%; cursor: pointer; font-size: 14px; touch-action: manipulation;
-}
-.limit-info {
-  font-size: 11px; color: var(--text-dim);
-  text-align: center; margin-top: 8px; font-weight: 500;
-}
-.toast {
-  position: fixed; bottom: 24px; left: 50%;
-  transform: translateX(-50%) translateY(80px);
-  background: rgba(40,40,60,0.95); color: white;
-  padding: 12px 24px; border-radius: 100px;
-  font-size: 13px; font-weight: 500; z-index: 99;
-  transition: transform 0.3s;
-}
+.alert-close { width: 28px; height: 28px; border: none; background: #f5f5fa; border-radius: 50%; cursor: pointer; font-size: 14px; touch-action: manipulation; }
+.limit-info { font-size: 11px; color: var(--text-dim); text-align: center; margin-top: 8px; font-weight: 500; }
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: rgba(40,40,60,0.95); color: white; padding: 12px 24px; border-radius: 100px; font-size: 13px; font-weight: 500; z-index: 99; transition: transform 0.3s; }
 .toast.show { transform: translateX(-50%) translateY(0); }
-
-.modal-backdrop {
-  position: fixed; inset: 0;
-  background: rgba(40,40,60,0.5);
-  backdrop-filter: blur(8px);
-  display: none;
-  align-items: flex-end;
-  justify-content: center;
-  z-index: 200;
-  padding: 16px;
-}
+.modal-backdrop { position: fixed; inset: 0; background: rgba(40,40,60,0.5); backdrop-filter: blur(8px); display: none; align-items: flex-end; justify-content: center; z-index: 200; padding: 16px; }
 .modal-backdrop.show { display: flex; animation: fadeIn 0.2s; }
 @keyframes fadeIn { from{opacity:0} to{opacity:1} }
-.modal {
-  background: white;
-  border-radius: var(--radius);
-  width: 100%;
-  max-width: 420px;
-  max-height: 80vh;
-  display: flex; flex-direction: column;
-  box-shadow: 0 -8px 40px rgba(0,0,0,0.2);
-  animation: slideUp 0.3s;
-}
+.modal { background: white; border-radius: var(--radius); width: 100%; max-width: 420px; max-height: 80vh; display: flex; flex-direction: column; box-shadow: 0 -8px 40px rgba(0,0,0,0.2); animation: slideUp 0.3s; }
 @keyframes slideUp { from{transform:translateY(40px)} to{transform:translateY(0)} }
-.modal-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 20px 20px 12px;
-}
-.modal-title {
-  font-family: 'Nunito', sans-serif;
-  font-size: 16px; font-weight: 800;
-}
-.modal-close {
-  width: 32px; height: 32px; border: none;
-  background: #f5f5fa; border-radius: 50%;
-  font-size: 14px; cursor: pointer;
-  touch-action: manipulation;
-}
-.modal-body {
-  padding: 0 20px 20px;
-  overflow-y: auto;
-  flex: 1;
-}
-.setting-row {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 14px 0; border-bottom: 1px solid #f5f5fa;
-}
+.modal-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 20px 12px; }
+.modal-title { font-family: 'Nunito', sans-serif; font-size: 16px; font-weight: 800; }
+.modal-close { width: 32px; height: 32px; border: none; background: #f5f5fa; border-radius: 50%; font-size: 14px; cursor: pointer; touch-action: manipulation; }
+.modal-body { padding: 0 20px 20px; overflow-y: auto; flex: 1; }
+.setting-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #f5f5fa; }
 .setting-row:last-child { border-bottom: none; }
 .setting-label { font-size: 14px; font-weight: 700; }
 .setting-sub { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
 .stepper { display: flex; align-items: center; gap: 10px; }
-.step-btn {
-  width: 36px; height: 36px; border-radius: 50%;
-  border: none; background: linear-gradient(135deg,#f5f5fa,#ededf5);
-  color: var(--text); font-size: 18px; font-weight: 700;
-  cursor: pointer; box-shadow: 0 2px 6px var(--shadow);
-  touch-action: manipulation;
-}
+.step-btn { width: 36px; height: 36px; border-radius: 50%; border: none; background: linear-gradient(135deg,#f5f5fa,#ededf5); color: var(--text); font-size: 18px; font-weight: 700; cursor: pointer; box-shadow: 0 2px 6px var(--shadow); touch-action: manipulation; }
 .step-btn:active { transform: scale(0.9); }
-.step-val {
-  font-family: 'Nunito', sans-serif;
-  font-size: 18px; font-weight: 800;
-  min-width: 40px; text-align: center;
-}
-
-.reset-section {
-  margin-top: 24px;
-  padding-top: 20px;
-  border-top: 2px dashed #ededf5;
-}
-.reset-title {
-  font-size: 13px; font-weight: 700;
-  color: var(--text-dim);
-  margin-bottom: 12px;
-}
-.reset-btn {
-  width: 100%;
-  padding: 14px;
-  border-radius: 12px;
-  border: 1.5px solid;
-  background: white;
-  font-family: 'Noto Sans KR', sans-serif;
-  font-size: 14px; font-weight: 700;
-  cursor: pointer;
-  touch-action: manipulation;
-  transition: all 0.2s;
-  margin-bottom: 8px;
-}
-.reset-btn:last-child { margin-bottom: 0; }
-.reset-btn:active { transform: scale(0.97); }
-.reset-today {
-  border-color: #ffd6a5;
-  color: #d97706;
-  background: #fff8f0;
-}
-.reset-today:active { background: #ffe9c8; }
-.reset-all {
-  border-color: #ffb3b3;
-  color: #dc2626;
-  background: #fff0f0;
-}
-.reset-all:active { background: #ffe0e0; }
-
-/* 상세 기록 */
-.session-list {
-  display: flex; flex-direction: column; gap: 8px;
-}
-.session-group { margin-bottom: 16px; }
-.session-group:last-child { margin-bottom: 0; }
-.session-group-title {
-  font-size: 13px; font-weight: 700;
-  margin-bottom: 8px;
-  display: flex; align-items: center; gap: 8px;
-}
-.session-item {
-  background: #f9f9fc;
-  border-radius: 10px;
-  padding: 10px 12px;
-  display: flex; justify-content: space-between; align-items: center;
-  font-size: 12px;
-}
-.session-time { font-family: 'Nunito', sans-serif; font-weight: 700; }
-.session-range { color: var(--text-dim); font-size: 11px; }
-.session-empty { color: var(--text-dim); font-size: 12px; padding: 8px 0; }
-
-/* 데이터 관리 섹션 */
-.backup-section {
-  margin-top: 20px;
-  padding-top: 20px;
-  border-top: 1px solid #f0f0f5;
-}
-.backup-title {
-  font-size: 13px; font-weight: 700;
-  color: #2563eb;
-  margin-bottom: 12px;
-}
-.backup-btn {
-  width: 100%;
-  padding: 12px;
-  border-radius: 12px;
-  border: 1.5px solid #c7d7f7;
-  background: #f0f5ff;
-  color: #2563eb;
-  font-family: 'Noto Sans KR', sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  margin-bottom: 8px;
-  touch-action: manipulation;
-  transition: all 0.2s;
-}
-.backup-btn:active { transform: scale(0.98); background: #d8e4ff; }
-.backup-info {
-  font-size: 11px; color: var(--text-dim);
-  text-align: center; margin-top: 6px;
-}
-
-.danger-section {
-  margin-top: 20px;
-  padding-top: 20px;
-  border-top: 2px dashed #f0f0f5;
-}
-.danger-title {
-  font-size: 13px; font-weight: 700;
-  color: #c53030;
-  margin-bottom: 12px;
-}
-.danger-btn {
-  width: 100%;
-  padding: 12px;
-  border-radius: 12px;
-  border: 1.5px solid #fed7d7;
-  background: #fff5f5;
-  color: #c53030;
-  font-family: 'Noto Sans KR', sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  margin-bottom: 8px;
-  touch-action: manipulation;
-  transition: all 0.2s;
-}
-.danger-btn:active { transform: scale(0.98); background: #fed7d7; }
-.danger-btn.danger-strong {
-  background: linear-gradient(135deg, #ff6b6b, #e53e3e);
-  color: white;
-  border-color: transparent;
-  box-shadow: 0 2px 8px rgba(229,62,62,0.3);
-}
-.danger-info {
-  font-size: 11px; color: var(--text-dim);
-  text-align: center; margin-top: 6px;
-}
-
-/* 상세 기록 요약 */
-.detail-summary {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
-  gap: 8px;
-  margin-bottom: 20px;
-}
-.summary-item {
-  background: #f9f9fc;
-  border-radius: 12px;
-  padding: 12px 6px;
-  text-align: center;
-}
+.step-val { font-family: 'Nunito', sans-serif; font-size: 18px; font-weight: 800; min-width: 40px; text-align: center; }
+.detail-summary { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; margin-bottom: 20px; }
+.summary-item { background: #f9f9fc; border-radius: 12px; padding: 12px 6px; text-align: center; }
 .stand-sum { background: linear-gradient(135deg,#ffe5ec,#ffe9c8); }
 .walk-sum { background: linear-gradient(135deg,#d4f5e9,#c8f0e0); }
 .sit-sum { background: linear-gradient(135deg,#fff8e1,#ffe0b2); }
 .rest-sum { background: linear-gradient(135deg,#e3f2fd,#e8eaff); }
 .summary-emoji { font-size: 20px; margin-bottom: 4px; }
-.summary-time {
-  font-family: 'Nunito', sans-serif;
-  font-size: 13px; font-weight: 800;
-}
-.summary-count {
-  font-size: 10px; color: var(--text-dim);
-  margin-top: 2px; font-weight: 600;
-}
-.timeline-title {
-  font-size: 13px; font-weight: 700;
-  margin-bottom: 10px;
-  color: var(--text);
-}
-.timeline {
-  display: flex; flex-direction: column; gap: 8px;
-}
-.tl-item {
-  display: flex; align-items: center; gap: 12px;
-  padding: 10px 14px;
-  border-radius: 12px;
-  background: #f9f9fc;
-  border-left: 3px solid #ddd;
-}
+.summary-time { font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 800; }
+.summary-count { font-size: 10px; color: var(--text-dim); margin-top: 2px; font-weight: 600; }
+.timeline-title { font-size: 13px; font-weight: 700; margin-bottom: 10px; color: var(--text); }
+.timeline { display: flex; flex-direction: column; gap: 8px; }
+.tl-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 12px; background: #f9f9fc; border-left: 3px solid #ddd; }
 .tl-stand { border-left-color: var(--stand-c); background: linear-gradient(90deg,#fff5f0,#fafafa 30%); }
 .tl-walk { border-left-color: var(--walk-c); background: linear-gradient(90deg,#f0fff4,#fafafa 30%); }
 .tl-sit { border-left-color: var(--sit-c); background: linear-gradient(90deg,#fffbf0,#fafafa 30%); }
@@ -478,31 +161,12 @@ body.resting .progress-fill { background: linear-gradient(90deg, var(--rest-c2),
 .tl-body { flex: 1; min-width: 0; }
 .tl-top { display: flex; justify-content: space-between; align-items: baseline; }
 .tl-name { font-size: 13px; font-weight: 700; }
-.tl-duration {
-  font-family: 'Nunito', sans-serif;
-  font-size: 13px; font-weight: 800;
-}
+.tl-duration { font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 800; }
 .tl-range { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
-.tl-delete {
-  width: 32px; height: 32px;
-  border: none;
-  background: transparent;
-  color: var(--text-dim);
-  font-size: 14px;
-  cursor: pointer;
-  border-radius: 50%;
-  flex-shrink: 0;
-  touch-action: manipulation;
-  transition: all 0.2s;
-  opacity: 0.5;
-}
-.tl-delete:active { transform: scale(0.85); background: #fed7d7; color: #c53030; opacity: 1; }
-.tl-item { position: relative; }
-
-/* 클릭 가능한 카드 표시 */
 .history-day { cursor: pointer; transition: transform 0.2s; touch-action: manipulation; }
 .history-day:active { transform: scale(0.98); }
 .today-card { cursor: pointer; touch-action: manipulation; }
+.session-empty { color: var(--text-dim); font-size: 12px; padding: 8px 0; text-align: center; }
 </style>
 </head>
 <body>
@@ -515,7 +179,7 @@ body.resting .progress-fill { background: linear-gradient(90deg, var(--rest-c2),
       <div class="day-counter" id="dayCounter">🌿 수술 후 50일째</div>
       <div class="week-counter" id="weekCounter">8주차 1일</div>
       <div class="header-date" id="dateText">오늘</div>
-      <div class="version-tag" id="versionTag">v1.5</div>
+      <div class="version-tag">v2.0</div>
     </div>
     <button class="settings-btn" id="settingsBtn">⚙️</button>
   </div>
@@ -527,9 +191,7 @@ body.resting .progress-fill { background: linear-gradient(90deg, var(--rest-c2),
     <div class="timer-display" id="timerDisplay">00:00</div>
     <div class="timer-sub" id="timerSub">활동을 선택해주세요</div>
     <div class="timer-cumulative" id="timerCumulative"></div>
-    <div class="progress-bar">
-      <div class="progress-fill" id="progressFill" style="width:0%"></div>
-    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
     <div class="limit-info" id="limitInfoText">서기·걷기 합계 20분 · 앉기 30분 · 휴식 60분(회당)</div>
   </div>
 
@@ -542,34 +204,22 @@ body.resting .progress-fill { background: linear-gradient(90deg, var(--rest-c2),
 
   <button class="stop-btn" id="stopBtn" disabled>⏹ 정지</button>
 
-  <div class="today-card">
+  <div class="today-card" id="todayCard">
     <div class="card-title">📊 오늘 합계 <span class="card-title-sub" id="todayCycles">0 사이클</span></div>
     <div class="today-row">
-      <div class="today-row-left">
-        <div class="today-row-emoji row-stand">🧍</div>
-        <div><div class="today-row-name">서기</div><div class="today-row-detail" id="standDetail">0회</div></div>
-      </div>
+      <div class="today-row-left"><div class="today-row-emoji row-stand">🧍</div><div><div class="today-row-name">서기</div><div class="today-row-detail" id="standDetail">0회</div></div></div>
       <div class="today-row-time t-stand" id="standTotal">0분</div>
     </div>
     <div class="today-row">
-      <div class="today-row-left">
-        <div class="today-row-emoji row-walk">🚶</div>
-        <div><div class="today-row-name">걷기</div><div class="today-row-detail" id="walkDetail">0회</div></div>
-      </div>
+      <div class="today-row-left"><div class="today-row-emoji row-walk">🚶</div><div><div class="today-row-name">걷기</div><div class="today-row-detail" id="walkDetail">0회</div></div></div>
       <div class="today-row-time t-walk" id="walkTotal">0분</div>
     </div>
     <div class="today-row">
-      <div class="today-row-left">
-        <div class="today-row-emoji row-sit">🪑</div>
-        <div><div class="today-row-name">앉기</div><div class="today-row-detail" id="sitDetail">0회</div></div>
-      </div>
+      <div class="today-row-left"><div class="today-row-emoji row-sit">🪑</div><div><div class="today-row-name">앉기</div><div class="today-row-detail" id="sitDetail">0회</div></div></div>
       <div class="today-row-time t-sit" id="sitTotal">0분</div>
     </div>
     <div class="today-row">
-      <div class="today-row-left">
-        <div class="today-row-emoji row-rest">🛌</div>
-        <div><div class="today-row-name">휴식</div><div class="today-row-detail" id="restDetail">0회</div></div>
-      </div>
+      <div class="today-row-left"><div class="today-row-emoji row-rest">🛌</div><div><div class="today-row-name">휴식</div><div class="today-row-detail" id="restDetail">0회</div></div></div>
       <div class="today-row-time t-rest" id="restTotal">0분</div>
     </div>
   </div>
@@ -602,10 +252,7 @@ body.resting .progress-fill { background: linear-gradient(90deg, var(--rest-c2),
     </div>
     <div class="modal-body">
       <div class="setting-row">
-        <div>
-          <div class="setting-label">🧍🚶 서기+걷기 (하루 누적)</div>
-          <div class="setting-sub">하루 동안 합쳐서 권장 시간</div>
-        </div>
+        <div><div class="setting-label">🧍🚶 서기+걷기 (하루 누적)</div><div class="setting-sub">하루 동안 합쳐서 권장 시간</div></div>
         <div class="stepper">
           <button class="step-btn" data-key="active" data-d="-5">−</button>
           <div class="step-val" id="limitActive">20</div>
@@ -613,10 +260,7 @@ body.resting .progress-fill { background: linear-gradient(90deg, var(--rest-c2),
         </div>
       </div>
       <div class="setting-row">
-        <div>
-          <div class="setting-label">🪑 앉기 (하루 누적)</div>
-          <div class="setting-sub">하루 동안 권장 시간</div>
-        </div>
+        <div><div class="setting-label">🪑 앉기 (하루 누적)</div><div class="setting-sub">하루 동안 권장 시간</div></div>
         <div class="stepper">
           <button class="step-btn" data-key="sit" data-d="-5">−</button>
           <div class="step-val" id="limitSit">30</div>
@@ -624,30 +268,12 @@ body.resting .progress-fill { background: linear-gradient(90deg, var(--rest-c2),
         </div>
       </div>
       <div class="setting-row">
-        <div>
-          <div class="setting-label">🛌 휴식 (회당)</div>
-          <div class="setting-sub">한 번에 충분히 쉬는 시간</div>
-        </div>
+        <div><div class="setting-label">🛌 휴식 (회당)</div><div class="setting-sub">한 번에 충분히 쉬는 시간</div></div>
         <div class="stepper">
           <button class="step-btn" data-key="rest" data-d="-10">−</button>
           <div class="step-val" id="limitRest">60</div>
           <button class="step-btn" data-key="rest" data-d="10">+</button>
         </div>
-      </div>
-
-      <div class="backup-section">
-        <div class="backup-title">💾 데이터 백업</div>
-        <button class="backup-btn" id="exportBtn">📥 데이터 내보내기 (.json)</button>
-        <button class="backup-btn" id="importBtn">📤 데이터 가져오기</button>
-        <input type="file" id="importFile" accept=".json" style="display:none">
-        <div class="backup-info">JSON 파일로 저장하면 다른 기기에서도 복원 가능</div>
-      </div>
-
-      <div class="danger-section">
-        <div class="danger-title">⚠️ 데이터 관리</div>
-        <button class="danger-btn" id="clearTodayBtn">오늘 기록만 삭제</button>
-        <button class="danger-btn danger-strong" id="clearAllBtn">전체 데이터 초기화</button>
-        <div class="danger-info">초기화하면 복구할 수 없어요</div>
       </div>
     </div>
   </div>
@@ -665,26 +291,13 @@ body.resting .progress-fill { background: linear-gradient(90deg, var(--rest-c2),
 </div>
 
 <script>
-// 한도 (분 단위): 서기+걷기는 하루 누적, 앉기는 하루 누적, 휴식은 회당
+'use strict';
+
 let LIMITS_MIN = { active: 20, sit: 30, rest: 60 };
 const LIMITS_KEY = 'recoveryLimits_v1';
 const SURGERY = new Date('2026-03-18T00:00:00');
 const STORE_KEY = 'recoveryTimer_v3';
 const HISTORY_KEY = 'recoveryHistory_v3';
-const BACKUP_KEY = 'recoveryHistory_backup'; // 백업용
-// 가능한 모든 이전 버전 키들 (마이그레이션용)
-const LEGACY_HISTORY_KEYS = ['recoveryHistory_v1', 'recoveryHistory_v2'];
-
-function loadLimits() {
-  try {
-    const raw = localStorage.getItem(LIMITS_KEY);
-    if (raw) LIMITS_MIN = { ...LIMITS_MIN, ...JSON.parse(raw) };
-  } catch(e){}
-}
-function saveLimits() {
-  try { localStorage.setItem(LIMITS_KEY, JSON.stringify(LIMITS_MIN)); } catch(e){}
-}
-function L(group) { return LIMITS_MIN[group] * 60; }
 
 const ACTIONS = {
   stand: { emoji:'🧍', name:'서기', cls:'standing', btnCls:'active-stand', group:'active', limitType:'cumulative' },
@@ -713,6 +326,22 @@ const formatHM = (sec) => {
   if (h>0) return `${h}시간 ${m}분`;
   return `${m}분`;
 };
+const getSec = (rec) => {
+  if (typeof rec === 'number') return rec;
+  if (rec && typeof rec === 'object') return rec.sec || 0;
+  return 0;
+};
+
+function loadLimits() {
+  try {
+    const raw = localStorage.getItem(LIMITS_KEY);
+    if (raw) LIMITS_MIN = { ...LIMITS_MIN, ...JSON.parse(raw) };
+  } catch(e){}
+}
+function saveLimits() {
+  try { localStorage.setItem(LIMITS_KEY, JSON.stringify(LIMITS_MIN)); } catch(e){}
+}
+function L(group) { return LIMITS_MIN[group] * 60; }
 
 function beep(freq, dur=0.2, vol=0.3) {
   try {
@@ -733,7 +362,6 @@ function playAlert() {
 }
 function vib(p) { if (navigator.vibrate) navigator.vibrate(p); }
 
-// 그룹별 하루 누적 시간 (현재 진행 중 포함)
 function getCumulativeForGroup(group) {
   const today = history[todayKey()] || {};
   let total = 0;
@@ -748,7 +376,6 @@ function getCumulativeForGroup(group) {
   return total;
 }
 
-// 현재 세션의 경과 시간
 function getSessionElapsed() {
   if (!S.current || !S.startTime) return 0;
   return Math.round((Date.now() - S.startTime) / 1000);
@@ -760,34 +387,38 @@ function startActivity(action) {
   S.startTime = Date.now();
   const def = ACTIONS[action];
   const group = def.group;
-  // 휴식은 회당 한도이므로 매번 새로 알림 가능
   if (def.limitType === 'session') {
     S.alertedGroup = null;
   } else {
     const cumulative = getCumulativeForGroup(group);
     S.alertedGroup = (cumulative >= L(group)) ? group : null;
   }
-
-  document.body.className = ACTIONS[action].cls;
-  $('statusEmoji').textContent = ACTIONS[action].emoji;
-  $('statusName').textContent = ACTIONS[action].name + ' 중';
+  document.body.className = def.cls;
+  $('statusEmoji').textContent = def.emoji;
+  $('statusName').textContent = def.name + ' 중';
   $('stopBtn').disabled = false;
-  document.querySelectorAll('.action-btn').forEach(b => b.className = 'action-btn');
-  $(`btn${action.charAt(0).toUpperCase()+action.slice(1)}`).classList.add(ACTIONS[action].btnCls);
+  document.querySelectorAll('.action-btn').forEach(b => {
+    b.className = 'action-btn';
+  });
+  const btn = $(`btn${action.charAt(0).toUpperCase()+action.slice(1)}`);
+  if (btn) btn.classList.add(def.btnCls);
   saveState();
   startTick();
-  showToast(`${ACTIONS[action].emoji} ${ACTIONS[action].name} 시작`);
+  showToast(`${def.emoji} ${def.name} 시작`);
 }
 
-function stopActivity(showMsg = true) {
+function stopActivity(showMsg) {
+  if (showMsg === undefined) showMsg = true;
   if (!S.current) return;
   const elapsed = Math.round((Date.now() - S.startTime) / 1000);
   const startTs = S.startTime;
-  if (elapsed >= 5) saveToHistory(S.current, elapsed, startTs);
   const action = S.current;
-  S.current = null; S.startTime = null; S.alertedGroup = null;
+  if (elapsed >= 5) saveToHistory(action, elapsed, startTs);
+  S.current = null;
+  S.startTime = null;
+  S.alertedGroup = null;
   clearInterval(S.timer);
-  clearState(); // 명시적 정지
+  try { localStorage.removeItem(STORE_KEY); } catch(e){}
   document.body.className = '';
   $('statusEmoji').textContent = '⏸';
   $('statusName').textContent = '대기 중';
@@ -799,8 +430,9 @@ function stopActivity(showMsg = true) {
   $('progressFill').style.width = '0%';
   $('progressFill').classList.remove('over');
   $('stopBtn').disabled = true;
-  document.querySelectorAll('.action-btn').forEach(b => b.className = 'action-btn');
-  saveState();
+  document.querySelectorAll('.action-btn').forEach(b => {
+    b.className = 'action-btn';
+  });
   renderToday();
   renderHistory();
   if (showMsg && elapsed >= 5) {
@@ -820,14 +452,10 @@ function updateTick() {
   const def = ACTIONS[S.current];
   const group = def.group;
   const limit = L(group);
-
   $('timerDisplay').textContent = formatTime(elapsed);
   $('timerSub').textContent = `이번 세션 ${formatTime(elapsed)}`;
-
   let measured, label, isOver;
-
   if (def.limitType === 'session') {
-    // 휴식: 이번 세션 시간이 기준
     measured = elapsed;
     label = '이번 휴식';
     isOver = elapsed >= limit;
@@ -835,27 +463,22 @@ function updateTick() {
       ? `${label} ${formatMin(elapsed)} / ${limit/60}분 ✓ 충분히 쉬셨어요`
       : `${label} ${formatMin(elapsed)} / ${limit/60}분`;
   } else {
-    // 서기·걷기·앉기: 하루 누적
     measured = getCumulativeForGroup(group);
-    if (group === 'active') label = '오늘 서기+걷기 누적';
-    else if (group === 'sit') label = '오늘 앉기 누적';
+    label = group === 'active' ? '오늘 서기+걷기 누적' : '오늘 앉기 누적';
     isOver = measured >= limit;
     $('timerCumulative').textContent = isOver
       ? `${label} ${formatMin(measured)} ⚠ ${formatMin(measured - limit)} 초과`
       : `${label} ${formatMin(measured)} / ${limit/60}분`;
   }
-
   if (!isOver) {
     $('timerCumulative').className = 'timer-cumulative';
     $('progressFill').style.width = Math.min(100, (measured/limit)*100) + '%';
     $('progressFill').classList.remove('over');
   } else {
     $('timerCumulative').className = def.limitType === 'session'
-      ? 'timer-cumulative'
-      : 'timer-cumulative over';
+      ? 'timer-cumulative' : 'timer-cumulative over';
     $('progressFill').style.width = '100%';
     if (def.limitType !== 'session') $('progressFill').classList.add('over');
-
     if (S.alertedGroup !== group) {
       S.alertedGroup = group;
       showAlert(group);
@@ -896,114 +519,47 @@ function showToast(msg) {
 
 function saveState() {
   try {
-    // 활동 중일 때만 저장 (null로 덮어쓰지 않음)
     if (S.current && S.startTime) {
       localStorage.setItem(STORE_KEY, JSON.stringify({
         current: S.current,
         startTime: S.startTime,
         alertedGroup: S.alertedGroup,
-        savedAt: Date.now(),
       }));
-    } else {
-      // 명시적 정지 상태
-      localStorage.removeItem(STORE_KEY);
     }
   } catch(e){}
-}
-
-// 명시적 클리어용
-function clearState() {
-  try { localStorage.removeItem(STORE_KEY); } catch(e){}
 }
 
 function loadState() {
   try {
     const raw = localStorage.getItem(STORE_KEY);
-    if (!raw) {
-      console.log('[Timer] 저장된 활동 없음');
-      return;
-    }
+    if (!raw) return;
     const v = JSON.parse(raw);
-    console.log('[Timer] 로드:', v);
     if (v.current && v.startTime && ACTIONS[v.current]) {
       const elapsed = Math.round((Date.now() - v.startTime) / 1000);
-      // 24시간 이상 지난 데이터는 무시 (다음 날 자동 정지)
       if (elapsed > 24 * 3600) {
-        console.log('[Timer] 너무 오래된 활동 무시:', elapsed, '초');
-        clearState();
+        try { localStorage.removeItem(STORE_KEY); } catch(e){}
         return;
       }
+      const def = ACTIONS[v.current];
       S.current = v.current;
       S.startTime = v.startTime;
       S.alertedGroup = v.alertedGroup || null;
-      document.body.className = ACTIONS[S.current].cls;
-      $('statusEmoji').textContent = ACTIONS[S.current].emoji;
-      $('statusName').textContent = ACTIONS[S.current].name + ' 중';
+      document.body.className = def.cls;
+      $('statusEmoji').textContent = def.emoji;
+      $('statusName').textContent = def.name + ' 중';
       $('stopBtn').disabled = false;
-      const btnId = `btn${S.current.charAt(0).toUpperCase()+S.current.slice(1)}`;
-      const btn = $(btnId);
-      if (btn) btn.classList.add(ACTIONS[S.current].btnCls);
+      const btn = $(`btn${v.current.charAt(0).toUpperCase()+v.current.slice(1)}`);
+      if (btn) btn.classList.add(def.btnCls);
       startTick();
-      console.log('[Timer] 복원 완료:', S.current, formatTime(elapsed));
     }
-  } catch(e){
-    console.error('[Timer] 로드 실패:', e);
-  }
+  } catch(e){}
 }
 
 function loadHistory() {
-  // 1. 현재 버전 시도
   try {
     const raw = localStorage.getItem(HISTORY_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (parsed && typeof parsed === 'object' && Object.keys(parsed).length > 0) {
-        history = parsed;
-        return;
-      }
-    }
-  } catch(e){}
-
-  // 2. 백업 시도
-  try {
-    const raw = localStorage.getItem(BACKUP_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (parsed && typeof parsed === 'object' && Object.keys(parsed).length > 0) {
-        history = parsed;
-        // 메인에 다시 저장
-        try { localStorage.setItem(HISTORY_KEY, raw); } catch(e){}
-        console.log('백업에서 복구됨');
-        return;
-      }
-    }
-  } catch(e){}
-
-  // 3. 이전 버전 키 마이그레이션
-  for (const oldKey of LEGACY_HISTORY_KEYS) {
-    try {
-      const raw = localStorage.getItem(oldKey);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed && typeof parsed === 'object' && Object.keys(parsed).length > 0) {
-          history = parsed;
-          try { localStorage.setItem(HISTORY_KEY, raw); } catch(e){}
-          console.log('이전 버전에서 마이그레이션:', oldKey);
-          return;
-        }
-      }
-    } catch(e){}
-  }
-
-  history = {};
-}
-
-// 백업 저장 (자동)
-function backupHistory() {
-  if (!history || Object.keys(history).length === 0) return;
-  try {
-    localStorage.setItem(BACKUP_KEY, JSON.stringify(history));
-  } catch(e){}
+    if (raw) history = JSON.parse(raw);
+  } catch(e){ history = {}; }
 }
 
 function saveToHistory(action, seconds, startTs) {
@@ -1014,18 +570,7 @@ function saveToHistory(action, seconds, startTs) {
     start: startTs,
     end: startTs + seconds * 1000,
   });
-  try {
-    const json = JSON.stringify(history);
-    localStorage.setItem(HISTORY_KEY, json);
-    localStorage.setItem(BACKUP_KEY, json); // 백업도 동시에
-  } catch(e){}
-}
-
-// 기록 객체에서 초 추출 (구버전 숫자도 호환)
-function getSec(rec) {
-  if (typeof rec === 'number') return rec;
-  if (rec && typeof rec === 'object') return rec.sec || 0;
-  return 0;
+  try { localStorage.setItem(HISTORY_KEY, JSON.stringify(history)); } catch(e){}
 }
 
 function renderToday() {
@@ -1062,25 +607,24 @@ function renderHistory() {
     const sitPct = total>0 ? (sitT/total)*100 : 0;
     const restPct = total>0 ? (restT/total)*100 : 0;
     const dateLabel = formatDateLabel(k);
-    return `
-      <div class="history-day" data-key="${k}">
-        <div class="history-day-header">
-          <div class="history-day-date">${dateLabel}</div>
-          <div class="history-day-cycles">${cycles}사이클 · 총 ${formatHM(total)}</div>
-        </div>
-        <div class="history-day-bars">
-          <div class="bar-stand" style="width:${standPct}%"></div>
-          <div class="bar-walk" style="width:${walkPct}%"></div>
-          <div class="bar-sit" style="width:${sitPct}%"></div>
-          <div class="bar-rest" style="width:${restPct}%"></div>
-        </div>
-        <div class="history-day-times">
-          <span class="t-stand">🧍${formatHM(standT)}</span>
-          <span class="t-walk">🚶${formatHM(walkT)}</span>
-          <span class="t-sit">🪑${formatHM(sitT)}</span>
-          <span class="t-rest">🛌${formatHM(restT)}</span>
-        </div>
-      </div>`;
+    return `<div class="history-day" data-key="${k}">
+      <div class="history-day-header">
+        <div class="history-day-date">${dateLabel}</div>
+        <div class="history-day-cycles">${cycles}사이클 · 총 ${formatHM(total)}</div>
+      </div>
+      <div class="history-day-bars">
+        <div class="bar-stand" style="width:${standPct}%"></div>
+        <div class="bar-walk" style="width:${walkPct}%"></div>
+        <div class="bar-sit" style="width:${sitPct}%"></div>
+        <div class="bar-rest" style="width:${restPct}%"></div>
+      </div>
+      <div class="history-day-times">
+        <span class="t-stand">🧍${formatHM(standT)}</span>
+        <span class="t-walk">🚶${formatHM(walkT)}</span>
+        <span class="t-sit">🪑${formatHM(sitT)}</span>
+        <span class="t-rest">🛌${formatHM(restT)}</span>
+      </div>
+    </div>`;
   }).join('');
 }
 
@@ -1102,48 +646,13 @@ function updateDayCounter() {
   const today = new Date(); today.setHours(0,0,0,0);
   const days = Math.floor((today - SURGERY) / (1000*60*60*24)) + 1;
   $('dayCounter').textContent = `🌿 수술 후 ${days}일째`;
-
-  // 주차 계산: 1~7일 = 1주차, 8~14일 = 2주차...
   const weekNum = Math.floor((days - 1) / 7) + 1;
   const dayInWeek = ((days - 1) % 7) + 1;
   $('weekCounter').textContent = `${weekNum}주차 ${dayInWeek}일`;
-
   const now = new Date();
   $('dateText').textContent = `${now.getMonth()+1}월 ${now.getDate()}일`;
 }
 
-// 백그라운드 복귀 시 타이머 재시작 (안드로이드 setInterval 정지 대응)
-function resyncTimer() {
-  if (S.current) {
-    clearInterval(S.timer);
-    updateTick();
-    startTick();
-  }
-}
-
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible') {
-    resyncTimer();
-  } else {
-    saveState();
-  }
-});
-window.addEventListener('focus', resyncTimer);
-window.addEventListener('pageshow', (e) => {
-  if (S.current) resyncTimer();
-});
-window.addEventListener('pagehide', saveState);
-window.addEventListener('beforeunload', saveState);
-
-// 매 초 dom 갱신 강제 (interval drift 방지)
-setInterval(() => {
-  if (S.current) {
-    updateTick(); // setInterval이 죽어도 이게 살아있을 수 있음
-    saveState();
-  }
-}, 1000);
-
-// 한도 표시 업데이트
 function renderLimitInfo() {
   $('limitInfoText').textContent =
     `서기·걷기 합계 ${LIMITS_MIN.active}분 · 앉기 ${LIMITS_MIN.sit}분 · 휴식 ${LIMITS_MIN.rest}분(회당)`;
@@ -1152,7 +661,6 @@ function renderLimitInfo() {
   $('limitRest').textContent = LIMITS_MIN.rest;
 }
 
-// 설정 변경
 function changeLimit(key, delta) {
   const newVal = LIMITS_MIN[key] + delta;
   const min = key === 'rest' ? 10 : 5;
@@ -1164,21 +672,16 @@ function changeLimit(key, delta) {
   if (S.current) updateTick();
 }
 
-// 시간 포맷 (HH:MM)
 function formatHHMM(ts) {
   const d = new Date(ts);
   return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
 }
 
-// 상세 기록 보기 - 시간순
 function showDetail(dateKey) {
   const day = history[dateKey] || { stand:[], walk:[], sit:[], rest:[] };
   const label = formatDateLabel(dateKey);
   $('detailTitle').textContent = `📋 ${label} 상세 기록`;
-
   const body = $('detailBody');
-
-  // 모든 세션을 한 배열로 모으기
   const allSessions = [];
   ['stand','walk','sit','rest'].forEach(action => {
     (day[action]||[]).forEach(rec => {
@@ -1190,11 +693,8 @@ function showDetail(dateKey) {
       });
     });
   });
-
-  // 합계 요약
   const totals = { stand:0, walk:0, sit:0, rest:0 };
   allSessions.forEach(s => totals[s.action] += s.sec);
-
   let summaryHtml = '<div class="detail-summary">';
   ['stand','walk','sit','rest'].forEach(action => {
     const def = ACTIONS[action];
@@ -1208,33 +708,22 @@ function showDetail(dateKey) {
     </div>`;
   });
   summaryHtml += '</div>';
-
   if (allSessions.length === 0) {
-    body.innerHTML = summaryHtml + '<div class="session-empty" style="text-align:center;padding:24px">기록이 없어요</div>';
+    body.innerHTML = summaryHtml + '<div class="session-empty" style="padding:24px">기록이 없어요</div>';
     $('detailModal').classList.add('show');
     return;
   }
-
-  // 시간순 정렬 (시작 시간 없는 건 뒤로)
   allSessions.sort((a, b) => {
     if (!a.start && !b.start) return 0;
     if (!a.start) return 1;
     if (!b.start) return -1;
     return a.start - b.start;
   });
-
   let html = summaryHtml + '<div class="timeline-title">⏱ 시간순 기록</div><div class="timeline">';
-
   allSessions.forEach(s => {
     const def = ACTIONS[s.action];
-    let timeRange;
-    if (s.start && s.end) {
-      timeRange = `${formatHHMM(s.start)} ~ ${formatHHMM(s.end)}`;
-    } else {
-      timeRange = '시간 정보 없음';
-    }
-
-    html += `<div class="tl-item tl-${s.action}" data-key="${dateKey}" data-action="${s.action}" data-start="${s.start || ''}" data-sec="${s.sec}">
+    const timeRange = (s.start && s.end) ? `${formatHHMM(s.start)} ~ ${formatHHMM(s.end)}` : '시간 정보 없음';
+    html += `<div class="tl-item tl-${s.action}">
       <div class="tl-emoji">${def.emoji}</div>
       <div class="tl-body">
         <div class="tl-top">
@@ -1243,404 +732,76 @@ function showDetail(dateKey) {
         </div>
         <div class="tl-range">${timeRange}</div>
       </div>
-      <button class="tl-delete" aria-label="삭제">🗑</button>
     </div>`;
   });
   html += '</div>';
-
   body.innerHTML = html;
   $('detailModal').classList.add('show');
 }
 
-// 개별 기록 삭제
-function deleteRecord(dateKey, action, startTs, sec) {
-  const day = history[dateKey];
-  if (!day || !day[action]) return;
-
-  // start 시간으로 매칭 (구버전 숫자 데이터는 sec로만 매칭)
-  const idx = day[action].findIndex(rec => {
-    if (typeof rec === 'object' && startTs) {
-      return rec.start == startTs;
-    }
-    return getSec(rec) === sec;
-  });
-
-  if (idx === -1) return;
-
-  if (confirm(`${ACTIONS[action].emoji} ${ACTIONS[action].name} ${formatTime(sec)} 기록을 삭제할까요?`)) {
-    day[action].splice(idx, 1);
-    if (day.stand.length===0 && day.walk.length===0 && day.sit.length===0 && day.rest.length===0) {
-      delete history[dateKey];
-    }
-    try { localStorage.setItem(HISTORY_KEY, JSON.stringify(history)); } catch(e){}
-    renderToday();
-    renderHistory();
-    showDetail(dateKey); // 모달 새로고침
-    showToast('기록 삭제 완료');
+// 백그라운드 복귀 시 동기화
+function resync() {
+  if (S.current) {
+    clearInterval(S.timer);
+    updateTick();
+    S.timer = setInterval(updateTick, 1000);
   }
 }
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') resync();
+  else saveState();
+});
+window.addEventListener('focus', resync);
+window.addEventListener('pageshow', () => { if (S.current) resync(); });
+window.addEventListener('pagehide', saveState);
+window.addEventListener('beforeunload', saveState);
+setInterval(() => { if (S.current) { saveState(); updateTick(); } }, 5000);
 
-// 안전한 이벤트 바인딩 (요소 없으면 무시)
-function safeOn(id, event, handler, opts) {
-  const el = $(id);
-  if (el) el.addEventListener(event, handler, opts);
-  else console.warn('[Timer] 요소 없음:', id);
-}
-
-function bindAction(id, action) {
+// 이벤트 바인딩
+function bindBtn(id, action) {
   const btn = $(id);
-  if (!btn) { console.warn('[Timer] 버튼 없음:', id); return; }
-  const handler = (e) => { if (e) e.preventDefault(); startActivity(action); };
-  btn.addEventListener('click', handler);
-  btn.addEventListener('touchend', handler, { passive: false });
+  if (!btn) return;
+  const h = (e) => { if (e) e.preventDefault(); startActivity(action); };
+  btn.addEventListener('click', h);
+  btn.addEventListener('touchend', h, { passive: false });
 }
-bindAction('btnStand', 'stand');
-bindAction('btnWalk', 'walk');
-bindAction('btnSit', 'sit');
-bindAction('btnRest', 'rest');
+bindBtn('btnStand', 'stand');
+bindBtn('btnWalk', 'walk');
+bindBtn('btnSit', 'sit');
+bindBtn('btnRest', 'rest');
 
-const stopHandler = (e) => { if (e) e.preventDefault(); stopActivity(true); };
-$('stopBtn').addEventListener('click', stopHandler);
-$('stopBtn').addEventListener('touchend', stopHandler, { passive: false });
+const stopBtn = $('stopBtn');
+const stopH = (e) => { if (e) e.preventDefault(); stopActivity(true); };
+stopBtn.addEventListener('click', stopH);
+stopBtn.addEventListener('touchend', stopH, { passive: false });
 
-safeOn('alertClose', 'click', () => $('alertBanner').classList.remove('show'));
-
-// 데이터 초기화
-function resetToday() {
-  if (!confirm('오늘 기록을 모두 삭제할까요?\n진행 중인 활동도 정지됩니다.')) return;
-
-  // 진행 중인 활동 정지 (기록 안 남김)
-  if (S.current) {
-    clearInterval(S.timer);
-    S.current = null; S.startTime = null; S.alertedGroup = null;
-    document.body.className = '';
-    $('statusEmoji').textContent = '⏸';
-    $('statusName').textContent = '대기 중';
-    $('timerDisplay').textContent = '00:00';
-    $('timerSub').textContent = '활동을 선택해주세요';
-    $('timerSub').className = 'timer-sub';
-    $('timerCumulative').textContent = '';
-    $('timerCumulative').className = 'timer-cumulative';
-    $('progressFill').style.width = '0%';
-    $('progressFill').classList.remove('over');
-    $('stopBtn').disabled = true;
-    document.querySelectorAll('.action-btn').forEach(b => b.className = 'action-btn');
-  }
-
-  // 데이터 내보내기 (HTML에 버튼 있으면 동작)
-safeOn('exportBtn', 'click', () => {
-  const data = {
-    version: 'recovery-timer-v3',
-    exportedAt: new Date().toISOString(),
-    surgery: '2026-03-18',
-    history: history,
-    limits: LIMITS_MIN,
-  };
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  const dateStr = new Date().toISOString().slice(0,10);
-  a.href = url;
-  a.download = `recovery-timer-${dateStr}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
-  showToast('데이터 내보내기 완료');
-});
-
-// 데이터 가져오기
-safeOn('importBtn', 'click', () => { const f = $('importFile'); if (f) f.click(); });
-safeOn('importFile', 'change', (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = (ev) => {
-    try {
-      const data = JSON.parse(ev.target.result);
-      if (!data.history) throw new Error('잘못된 형식');
-      if (confirm('데이터를 가져올까요?\n현재 기록과 합쳐집니다.\n(같은 시간 기록은 중복될 수 있어요)')) {
-        // history 합치기
-        for (const [day, dayData] of Object.entries(data.history)) {
-          if (!history[day]) history[day] = { stand:[], walk:[], sit:[], rest:[] };
-          ['stand','walk','sit','rest'].forEach(action => {
-            if (dayData[action]) {
-              history[day][action] = [...(history[day][action]||[]), ...dayData[action]];
-            }
-          });
-        }
-        // 한도 가져오기
-        if (data.limits) {
-          LIMITS_MIN = { ...LIMITS_MIN, ...data.limits };
-          saveLimits();
-          renderLimitInfo();
-        }
-        try {
-          const json = JSON.stringify(history);
-          localStorage.setItem(HISTORY_KEY, json);
-          localStorage.setItem(BACKUP_KEY, json);
-        } catch(e){}
-        renderToday();
-        renderHistory();
-        showToast('데이터 가져오기 완료');
-        $('settingsModal').classList.remove('show');
-      }
-    } catch(err) {
-      alert('파일을 읽을 수 없어요: ' + err.message);
-    }
-  };
-  reader.readAsText(file);
-  e.target.value = ''; // 같은 파일 다시 선택 가능하도록
-});
-
-// 오늘 기록 삭제
-  const key = todayKey();
-  delete history[key];
-  try { localStorage.setItem(HISTORY_KEY, JSON.stringify(history)); } catch(e){}
-  saveState();
-
-  renderToday();
-  renderHistory();
-  $('settingsModal').classList.remove('show');
-  showToast('오늘 기록이 삭제됐어요');
-}
-
-function resetAll() {
-  if (!confirm('정말 모든 기록을 삭제할까요?\n이 작업은 되돌릴 수 없어요.')) return;
-  if (!confirm('한 번 더 확인할게요.\n전체 기록을 삭제하시겠어요?')) return;
-
-  // 진행 중 정지
-  if (S.current) {
-    clearInterval(S.timer);
-    S.current = null; S.startTime = null; S.alertedGroup = null;
-    document.body.className = '';
-    $('statusEmoji').textContent = '⏸';
-    $('statusName').textContent = '대기 중';
-    $('timerDisplay').textContent = '00:00';
-    $('timerSub').textContent = '활동을 선택해주세요';
-    $('timerSub').className = 'timer-sub';
-    $('timerCumulative').textContent = '';
-    $('timerCumulative').className = 'timer-cumulative';
-    $('progressFill').style.width = '0%';
-    $('progressFill').classList.remove('over');
-    $('stopBtn').disabled = true;
-    document.querySelectorAll('.action-btn').forEach(b => b.className = 'action-btn');
-  }
-
-  // 전체 기록 삭제 (설정은 유지)
-  history = {};
-  try {
-    localStorage.removeItem(HISTORY_KEY);
-    localStorage.removeItem(STORE_KEY);
-  } catch(e){}
-
-  renderToday();
-  renderHistory();
-  $('settingsModal').classList.remove('show');
-  showToast('모든 기록이 삭제됐어요');
-}
-
-const resetTodayHandler = (e) => { if (e) e.preventDefault(); resetToday(); };
-const resetAllHandler = (e) => { if (e) e.preventDefault(); resetAll(); };
-$('resetTodayBtn').addEventListener('click', resetTodayHandler);
-$('resetTodayBtn').addEventListener('touchend', resetTodayHandler, { passive: false });
-$('resetAllBtn').addEventListener('click', resetAllHandler);
-$('resetAllBtn').addEventListener('touchend', resetAllHandler, { passive: false });
-
-// 설정 모달 열기/닫기
-safeOn('settingsBtn', 'click', () => $('settingsModal').classList.add('show'));
-safeOn('settingsClose', 'click', () => $('settingsModal').classList.remove('show'));
-safeOn('settingsModal', 'click', (e) => {
+$('alertClose').addEventListener('click', () => $('alertBanner').classList.remove('show'));
+$('settingsBtn').addEventListener('click', () => $('settingsModal').classList.add('show'));
+$('settingsClose').addEventListener('click', () => $('settingsModal').classList.remove('show'));
+$('settingsModal').addEventListener('click', (e) => {
   if (e.target === $('settingsModal')) $('settingsModal').classList.remove('show');
 });
-
-// 스테퍼 버튼들
-// 스테퍼 버튼들 (safe)
-const stepBtns = document.querySelectorAll('.step-btn');
-stepBtns.forEach(btn => {
-  const handler = (e) => {
-    if (e) e.preventDefault();
-    changeLimit(btn.dataset.key, parseInt(btn.dataset.d));
-  };
-  btn.addEventListener('click', handler);
-  btn.addEventListener('touchend', handler, { passive: false });
-});
-
-// 상세 기록 모달
-safeOn('detailClose', 'click', () => $('detailModal').classList.remove('show'));
-safeOn('detailModal', 'click', (e) => {
+$('detailClose').addEventListener('click', () => $('detailModal').classList.remove('show'));
+$('detailModal').addEventListener('click', (e) => {
   if (e.target === $('detailModal')) $('detailModal').classList.remove('show');
 });
 
-// 개별 기록 삭제 (위임)
-safeOn('detailBody', 'click', (e) => {
-  const delBtn = e.target.closest('.tl-delete');
-  if (delBtn) {
-    e.stopPropagation();
-    const item = delBtn.closest('.tl-item');
-    if (item) {
-      const dateKey = item.dataset.key;
-      const action = item.dataset.action;
-      const startTs = item.dataset.start ? parseInt(item.dataset.start) : null;
-      const sec = parseInt(item.dataset.sec);
-      deleteRecord(dateKey, action, startTs, sec);
-    }
-  }
-});
-// (위 detailBody 클로저 끝)
-
-// 오늘 카드 클릭 → 상세
-const todayCard = document.querySelector('.today-card');
-if (todayCard) todayCard.addEventListener('click', () => showDetail(todayKey()));
-
-// 데이터 내보내기 (HTML에 버튼 있으면 동작)
-safeOn('exportBtn', 'click', () => {
-  const data = {
-    version: 'recovery-timer-v3',
-    exportedAt: new Date().toISOString(),
-    surgery: '2026-03-18',
-    history: history,
-    limits: LIMITS_MIN,
-  };
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  const dateStr = new Date().toISOString().slice(0,10);
-  a.href = url;
-  a.download = `recovery-timer-${dateStr}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
-  showToast('데이터 내보내기 완료');
+document.querySelectorAll('.step-btn').forEach(btn => {
+  const h = (e) => { if (e) e.preventDefault(); changeLimit(btn.dataset.key, parseInt(btn.dataset.d)); };
+  btn.addEventListener('click', h);
+  btn.addEventListener('touchend', h, { passive: false });
 });
 
-// 데이터 가져오기
-safeOn('importBtn', 'click', () => { const f = $('importFile'); if (f) f.click(); });
-safeOn('importFile', 'change', (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = (ev) => {
-    try {
-      const data = JSON.parse(ev.target.result);
-      if (!data.history) throw new Error('잘못된 형식');
-      if (confirm('데이터를 가져올까요?\n현재 기록과 합쳐집니다.\n(같은 시간 기록은 중복될 수 있어요)')) {
-        // history 합치기
-        for (const [day, dayData] of Object.entries(data.history)) {
-          if (!history[day]) history[day] = { stand:[], walk:[], sit:[], rest:[] };
-          ['stand','walk','sit','rest'].forEach(action => {
-            if (dayData[action]) {
-              history[day][action] = [...(history[day][action]||[]), ...dayData[action]];
-            }
-          });
-        }
-        // 한도 가져오기
-        if (data.limits) {
-          LIMITS_MIN = { ...LIMITS_MIN, ...data.limits };
-          saveLimits();
-          renderLimitInfo();
-        }
-        try {
-          const json = JSON.stringify(history);
-          localStorage.setItem(HISTORY_KEY, json);
-          localStorage.setItem(BACKUP_KEY, json);
-        } catch(e){}
-        renderToday();
-        renderHistory();
-        showToast('데이터 가져오기 완료');
-        $('settingsModal').classList.remove('show');
-      }
-    } catch(err) {
-      alert('파일을 읽을 수 없어요: ' + err.message);
-    }
-  };
-  reader.readAsText(file);
-  e.target.value = ''; // 같은 파일 다시 선택 가능하도록
-});
-
-// 오늘 기록 삭제
-safeOn('clearTodayBtn', 'click', () => {
-  const key = todayKey();
-  const today = history[key];
-  if (!today || (!today.stand?.length && !today.walk?.length && !today.sit?.length && !today.rest?.length)) {
-    showToast('오늘 기록이 없어요');
-    return;
-  }
-  if (confirm('오늘 기록을 모두 삭제할까요?\n진행 중인 활동도 정지돼요.')) {
-    // 진행 중이면 정지 (기록 안 남김)
-    if (S.current) {
-      clearInterval(S.timer);
-      S.current = null; S.startTime = null; S.alertedGroup = null;
-      document.body.className = '';
-      $('statusEmoji').textContent = '⏸';
-      $('statusName').textContent = '대기 중';
-      $('timerDisplay').textContent = '00:00';
-      $('timerSub').textContent = '활동을 선택해주세요';
-      $('timerCumulative').textContent = '';
-      $('progressFill').style.width = '0%';
-      $('progressFill').classList.remove('over');
-      $('stopBtn').disabled = true;
-      document.querySelectorAll('.action-btn').forEach(b => b.className = 'action-btn');
-    }
-    delete history[key];
-    try { localStorage.setItem(HISTORY_KEY, JSON.stringify(history)); } catch(e){}
-    saveState();
-    renderToday();
-    renderHistory();
-    $('settingsModal').classList.remove('show');
-    showToast('오늘 기록 삭제 완료');
-  }
-});
-
-// 전체 초기화
-// resetTodayBtn (구버전 호환)
-safeOn('resetTodayBtn', 'click', () => {
-  const btn = $('clearTodayBtn');
-  if (btn) btn.click();
-});
-safeOn('resetAllBtn', 'click', () => {
-  const btn = $('clearAllBtn');
-  if (btn) btn.click();
-});
-
-safeOn('clearAllBtn', 'click', () => {
-  if (confirm('⚠️ 전체 데이터를 모두 삭제할까요?\n\n· 모든 기록 (오늘 포함)\n· 진행 중인 활동\n· 사이클 통계\n\n시간 설정과 수술 날짜는 유지됩니다.')) {
-    if (confirm('정말 삭제하시겠어요?\n복구할 수 없습니다.')) {
-      // 진행 중 정지
-      if (S.current) {
-        clearInterval(S.timer);
-        S.current = null; S.startTime = null; S.alertedGroup = null;
-      }
-      history = {};
-      try {
-        localStorage.removeItem(HISTORY_KEY);
-        localStorage.removeItem(STORE_KEY);
-      } catch(e){}
-      document.body.className = '';
-      $('statusEmoji').textContent = '⏸';
-      $('statusName').textContent = '대기 중';
-      $('timerDisplay').textContent = '00:00';
-      $('timerSub').textContent = '활동을 선택해주세요';
-      $('timerCumulative').textContent = '';
-      $('progressFill').style.width = '0%';
-      $('progressFill').classList.remove('over');
-      $('stopBtn').disabled = true;
-      document.querySelectorAll('.action-btn').forEach(b => b.className = 'action-btn');
-      renderToday();
-      renderHistory();
-      $('settingsModal').classList.remove('show');
-      showToast('모든 데이터 초기화 완료');
-    }
-  }
-});
-
-// 히스토리 카드 위임 클릭
-safeOn('historyList', 'click', (e) => {
+$('todayCard').addEventListener('click', () => showDetail(todayKey()));
+$('historyList').addEventListener('click', (e) => {
   const day = e.target.closest('.history-day');
   if (day && day.dataset.key) showDetail(day.dataset.key);
 });
 
+// 초기화
 updateDayCounter();
 loadLimits();
 loadHistory();
-backupHistory(); // 로드 후 즉시 백업
 loadState();
 renderToday();
 renderHistory();
