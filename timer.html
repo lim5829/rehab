@@ -60,7 +60,14 @@ body.resting { background: var(--rest-bg); }
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
-.header-date { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+.week-counter {
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px; font-weight: 700;
+  color: var(--text-dim);
+  margin-top: 2px;
+  letter-spacing: 0.5px;
+}
+.header-date { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
 .status-card {
   background: white; border-radius: var(--radius);
   padding: 28px 20px; box-shadow: 0 4px 20px var(--shadow);
@@ -284,6 +291,44 @@ body.resting .progress-fill { background: linear-gradient(90deg, var(--rest-c2),
   min-width: 40px; text-align: center;
 }
 
+.reset-section {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 2px dashed #ededf5;
+}
+.reset-title {
+  font-size: 13px; font-weight: 700;
+  color: var(--text-dim);
+  margin-bottom: 12px;
+}
+.reset-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1.5px solid;
+  background: white;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 14px; font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: all 0.2s;
+  margin-bottom: 8px;
+}
+.reset-btn:last-child { margin-bottom: 0; }
+.reset-btn:active { transform: scale(0.97); }
+.reset-today {
+  border-color: #ffd6a5;
+  color: #d97706;
+  background: #fff8f0;
+}
+.reset-today:active { background: #ffe9c8; }
+.reset-all {
+  border-color: #ffb3b3;
+  color: #dc2626;
+  background: #fff0f0;
+}
+.reset-all:active { background: #ffe0e0; }
+
 /* 상세 기록 */
 .session-list {
   display: flex; flex-direction: column; gap: 8px;
@@ -305,6 +350,44 @@ body.resting .progress-fill { background: linear-gradient(90deg, var(--rest-c2),
 .session-time { font-family: 'Nunito', sans-serif; font-weight: 700; }
 .session-range { color: var(--text-dim); font-size: 11px; }
 .session-empty { color: var(--text-dim); font-size: 12px; padding: 8px 0; }
+
+/* 데이터 관리 섹션 */
+.danger-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 2px dashed #f0f0f5;
+}
+.danger-title {
+  font-size: 13px; font-weight: 700;
+  color: #c53030;
+  margin-bottom: 12px;
+}
+.danger-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1.5px solid #fed7d7;
+  background: #fff5f5;
+  color: #c53030;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 8px;
+  touch-action: manipulation;
+  transition: all 0.2s;
+}
+.danger-btn:active { transform: scale(0.98); background: #fed7d7; }
+.danger-btn.danger-strong {
+  background: linear-gradient(135deg, #ff6b6b, #e53e3e);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 2px 8px rgba(229,62,62,0.3);
+}
+.danger-info {
+  font-size: 11px; color: var(--text-dim);
+  text-align: center; margin-top: 6px;
+}
 
 /* 상세 기록 요약 */
 .detail-summary {
@@ -360,6 +443,21 @@ body.resting .progress-fill { background: linear-gradient(90deg, var(--rest-c2),
   font-size: 13px; font-weight: 800;
 }
 .tl-range { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+.tl-delete {
+  width: 32px; height: 32px;
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 50%;
+  flex-shrink: 0;
+  touch-action: manipulation;
+  transition: all 0.2s;
+  opacity: 0.5;
+}
+.tl-delete:active { transform: scale(0.85); background: #fed7d7; color: #c53030; opacity: 1; }
+.tl-item { position: relative; }
 
 /* 클릭 가능한 카드 표시 */
 .history-day { cursor: pointer; transition: transform 0.2s; touch-action: manipulation; }
@@ -375,6 +473,7 @@ body.resting .progress-fill { background: linear-gradient(90deg, var(--rest-c2),
   <div class="header">
     <div>
       <div class="day-counter" id="dayCounter">🌿 수술 후 50일째</div>
+      <div class="week-counter" id="weekCounter">8주차 1일</div>
       <div class="header-date" id="dateText">오늘</div>
     </div>
     <button class="settings-btn" id="settingsBtn">⚙️</button>
@@ -493,6 +592,12 @@ body.resting .progress-fill { background: linear-gradient(90deg, var(--rest-c2),
           <div class="step-val" id="limitRest">60</div>
           <button class="step-btn" data-key="rest" data-d="10">+</button>
         </div>
+      </div>
+
+      <div class="reset-section">
+        <div class="reset-title">🗑 데이터 초기화</div>
+        <button class="reset-btn reset-today" id="resetTodayBtn">오늘 기록만 삭제</button>
+        <button class="reset-btn reset-all" id="resetAllBtn">전체 기록 삭제</button>
       </div>
     </div>
   </div>
@@ -861,8 +966,14 @@ function formatDateLabel(key) {
 
 function updateDayCounter() {
   const today = new Date(); today.setHours(0,0,0,0);
-  const diff = Math.floor((today - SURGERY) / (1000*60*60*24)) + 1;
-  $('dayCounter').textContent = `🌿 수술 후 ${diff}일째`;
+  const days = Math.floor((today - SURGERY) / (1000*60*60*24)) + 1;
+  $('dayCounter').textContent = `🌿 수술 후 ${days}일째`;
+
+  // 주차 계산: 1~7일 = 1주차, 8~14일 = 2주차...
+  const weekNum = Math.floor((days - 1) / 7) + 1;
+  const dayInWeek = ((days - 1) % 7) + 1;
+  $('weekCounter').textContent = `${weekNum}주차 ${dayInWeek}일`;
+
   const now = new Date();
   $('dateText').textContent = `${now.getMonth()+1}월 ${now.getDate()}일`;
 }
@@ -989,7 +1100,7 @@ function showDetail(dateKey) {
       timeRange = '시간 정보 없음';
     }
 
-    html += `<div class="tl-item tl-${s.action}">
+    html += `<div class="tl-item tl-${s.action}" data-key="${dateKey}" data-action="${s.action}" data-start="${s.start || ''}" data-sec="${s.sec}">
       <div class="tl-emoji">${def.emoji}</div>
       <div class="tl-body">
         <div class="tl-top">
@@ -998,12 +1109,41 @@ function showDetail(dateKey) {
         </div>
         <div class="tl-range">${timeRange}</div>
       </div>
+      <button class="tl-delete" aria-label="삭제">🗑</button>
     </div>`;
   });
   html += '</div>';
 
   body.innerHTML = html;
   $('detailModal').classList.add('show');
+}
+
+// 개별 기록 삭제
+function deleteRecord(dateKey, action, startTs, sec) {
+  const day = history[dateKey];
+  if (!day || !day[action]) return;
+
+  // start 시간으로 매칭 (구버전 숫자 데이터는 sec로만 매칭)
+  const idx = day[action].findIndex(rec => {
+    if (typeof rec === 'object' && startTs) {
+      return rec.start == startTs;
+    }
+    return getSec(rec) === sec;
+  });
+
+  if (idx === -1) return;
+
+  if (confirm(`${ACTIONS[action].emoji} ${ACTIONS[action].name} ${formatTime(sec)} 기록을 삭제할까요?`)) {
+    day[action].splice(idx, 1);
+    if (day.stand.length===0 && day.walk.length===0 && day.sit.length===0 && day.rest.length===0) {
+      delete history[dateKey];
+    }
+    try { localStorage.setItem(HISTORY_KEY, JSON.stringify(history)); } catch(e){}
+    renderToday();
+    renderHistory();
+    showDetail(dateKey); // 모달 새로고침
+    showToast('기록 삭제 완료');
+  }
 }
 
 function bindAction(id, action) {
@@ -1022,6 +1162,82 @@ $('stopBtn').addEventListener('click', stopHandler);
 $('stopBtn').addEventListener('touchend', stopHandler, { passive: false });
 
 $('alertClose').addEventListener('click', () => $('alertBanner').classList.remove('show'));
+
+// 데이터 초기화
+function resetToday() {
+  if (!confirm('오늘 기록을 모두 삭제할까요?\n진행 중인 활동도 정지됩니다.')) return;
+
+  // 진행 중인 활동 정지 (기록 안 남김)
+  if (S.current) {
+    clearInterval(S.timer);
+    S.current = null; S.startTime = null; S.alertedGroup = null;
+    document.body.className = '';
+    $('statusEmoji').textContent = '⏸';
+    $('statusName').textContent = '대기 중';
+    $('timerDisplay').textContent = '00:00';
+    $('timerSub').textContent = '활동을 선택해주세요';
+    $('timerSub').className = 'timer-sub';
+    $('timerCumulative').textContent = '';
+    $('timerCumulative').className = 'timer-cumulative';
+    $('progressFill').style.width = '0%';
+    $('progressFill').classList.remove('over');
+    $('stopBtn').disabled = true;
+    document.querySelectorAll('.action-btn').forEach(b => b.className = 'action-btn');
+  }
+
+  // 오늘 기록 삭제
+  const key = todayKey();
+  delete history[key];
+  try { localStorage.setItem(HISTORY_KEY, JSON.stringify(history)); } catch(e){}
+  saveState();
+
+  renderToday();
+  renderHistory();
+  $('settingsModal').classList.remove('show');
+  showToast('오늘 기록이 삭제됐어요');
+}
+
+function resetAll() {
+  if (!confirm('정말 모든 기록을 삭제할까요?\n이 작업은 되돌릴 수 없어요.')) return;
+  if (!confirm('한 번 더 확인할게요.\n전체 기록을 삭제하시겠어요?')) return;
+
+  // 진행 중 정지
+  if (S.current) {
+    clearInterval(S.timer);
+    S.current = null; S.startTime = null; S.alertedGroup = null;
+    document.body.className = '';
+    $('statusEmoji').textContent = '⏸';
+    $('statusName').textContent = '대기 중';
+    $('timerDisplay').textContent = '00:00';
+    $('timerSub').textContent = '활동을 선택해주세요';
+    $('timerSub').className = 'timer-sub';
+    $('timerCumulative').textContent = '';
+    $('timerCumulative').className = 'timer-cumulative';
+    $('progressFill').style.width = '0%';
+    $('progressFill').classList.remove('over');
+    $('stopBtn').disabled = true;
+    document.querySelectorAll('.action-btn').forEach(b => b.className = 'action-btn');
+  }
+
+  // 전체 기록 삭제 (설정은 유지)
+  history = {};
+  try {
+    localStorage.removeItem(HISTORY_KEY);
+    localStorage.removeItem(STORE_KEY);
+  } catch(e){}
+
+  renderToday();
+  renderHistory();
+  $('settingsModal').classList.remove('show');
+  showToast('모든 기록이 삭제됐어요');
+}
+
+const resetTodayHandler = (e) => { if (e) e.preventDefault(); resetToday(); };
+const resetAllHandler = (e) => { if (e) e.preventDefault(); resetAll(); };
+$('resetTodayBtn').addEventListener('click', resetTodayHandler);
+$('resetTodayBtn').addEventListener('touchend', resetTodayHandler, { passive: false });
+$('resetAllBtn').addEventListener('click', resetAllHandler);
+$('resetAllBtn').addEventListener('touchend', resetAllHandler, { passive: false });
 
 // 설정 모달 열기/닫기
 $('settingsBtn').addEventListener('click', () => $('settingsModal').classList.add('show'));
@@ -1046,8 +1262,90 @@ $('detailModal').addEventListener('click', (e) => {
   if (e.target === $('detailModal')) $('detailModal').classList.remove('show');
 });
 
+// 개별 기록 삭제 (위임)
+$('detailBody').addEventListener('click', (e) => {
+  const delBtn = e.target.closest('.tl-delete');
+  if (delBtn) {
+    e.stopPropagation();
+    const item = delBtn.closest('.tl-item');
+    if (item) {
+      const dateKey = item.dataset.key;
+      const action = item.dataset.action;
+      const startTs = item.dataset.start ? parseInt(item.dataset.start) : null;
+      const sec = parseInt(item.dataset.sec);
+      deleteRecord(dateKey, action, startTs, sec);
+    }
+  }
+});
+
 // 오늘 카드 클릭 → 상세
 document.querySelector('.today-card').addEventListener('click', () => showDetail(todayKey()));
+
+// 오늘 기록 삭제
+$('clearTodayBtn').addEventListener('click', () => {
+  const key = todayKey();
+  const today = history[key];
+  if (!today || (!today.stand?.length && !today.walk?.length && !today.sit?.length && !today.rest?.length)) {
+    showToast('오늘 기록이 없어요');
+    return;
+  }
+  if (confirm('오늘 기록을 모두 삭제할까요?\n진행 중인 활동도 정지돼요.')) {
+    // 진행 중이면 정지 (기록 안 남김)
+    if (S.current) {
+      clearInterval(S.timer);
+      S.current = null; S.startTime = null; S.alertedGroup = null;
+      document.body.className = '';
+      $('statusEmoji').textContent = '⏸';
+      $('statusName').textContent = '대기 중';
+      $('timerDisplay').textContent = '00:00';
+      $('timerSub').textContent = '활동을 선택해주세요';
+      $('timerCumulative').textContent = '';
+      $('progressFill').style.width = '0%';
+      $('progressFill').classList.remove('over');
+      $('stopBtn').disabled = true;
+      document.querySelectorAll('.action-btn').forEach(b => b.className = 'action-btn');
+    }
+    delete history[key];
+    try { localStorage.setItem(HISTORY_KEY, JSON.stringify(history)); } catch(e){}
+    saveState();
+    renderToday();
+    renderHistory();
+    $('settingsModal').classList.remove('show');
+    showToast('오늘 기록 삭제 완료');
+  }
+});
+
+// 전체 초기화
+$('clearAllBtn').addEventListener('click', () => {
+  if (confirm('⚠️ 전체 데이터를 모두 삭제할까요?\n\n· 모든 기록 (오늘 포함)\n· 진행 중인 활동\n· 사이클 통계\n\n시간 설정과 수술 날짜는 유지됩니다.')) {
+    if (confirm('정말 삭제하시겠어요?\n복구할 수 없습니다.')) {
+      // 진행 중 정지
+      if (S.current) {
+        clearInterval(S.timer);
+        S.current = null; S.startTime = null; S.alertedGroup = null;
+      }
+      history = {};
+      try {
+        localStorage.removeItem(HISTORY_KEY);
+        localStorage.removeItem(STORE_KEY);
+      } catch(e){}
+      document.body.className = '';
+      $('statusEmoji').textContent = '⏸';
+      $('statusName').textContent = '대기 중';
+      $('timerDisplay').textContent = '00:00';
+      $('timerSub').textContent = '활동을 선택해주세요';
+      $('timerCumulative').textContent = '';
+      $('progressFill').style.width = '0%';
+      $('progressFill').classList.remove('over');
+      $('stopBtn').disabled = true;
+      document.querySelectorAll('.action-btn').forEach(b => b.className = 'action-btn');
+      renderToday();
+      renderHistory();
+      $('settingsModal').classList.remove('show');
+      showToast('모든 데이터 초기화 완료');
+    }
+  }
+});
 
 // 히스토리 카드 위임 클릭
 $('historyList').addEventListener('click', (e) => {
