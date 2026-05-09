@@ -395,6 +395,8 @@ function startActivity(action) {
     const cumulative = getCumulativeForGroup(group);
     S.alertedGroup = (cumulative >= L(group)) ? group : null;
   }
+  // 즉시 저장 (백그라운드 종료 대비 - 시작하자마자 박아넣기)
+  saveState();
   document.body.className = def.cls;
   $('statusEmoji').textContent = def.emoji;
   $('statusName').textContent = def.name + ' 중';
@@ -450,6 +452,8 @@ function startTick() {
 
 function updateTick() {
   if (!S.current) return;
+  // 매 tick마다 저장 (OS가 백그라운드 페이지 강제 종료해도 최대 1초 손실)
+  saveState();
   const elapsed = getSessionElapsed();
   const def = ACTIONS[S.current];
   const group = def.group;
@@ -526,6 +530,7 @@ function saveState() {
         current: S.current,
         startTime: S.startTime,
         alertedGroup: S.alertedGroup,
+        lastSaved: Date.now(),
       }));
     }
   } catch(e){}
@@ -538,7 +543,8 @@ function loadState() {
     const v = JSON.parse(raw);
     if (v.current && v.startTime && ACTIONS[v.current]) {
       const elapsed = Math.round((Date.now() - v.startTime) / 1000);
-      if (elapsed > 24 * 3600) {
+      // 48시간 초과한 세션은 폐기 (자고 일어나도 복원되도록 24h → 48h)
+      if (elapsed > 48 * 3600) {
         try { localStorage.removeItem(STORE_KEY); } catch(e){}
         return;
       }
@@ -553,6 +559,11 @@ function loadState() {
       const btn = $(`btn${v.current.charAt(0).toUpperCase()+v.current.slice(1)}`);
       if (btn) btn.classList.add(def.btnCls);
       startTick();
+      // 복원 알림 (백그라운드 종료 후 복귀 시)
+      const sinceLastSave = v.lastSaved ? Math.round((Date.now() - v.lastSaved) / 1000) : 0;
+      if (sinceLastSave > 60) {
+        showToast(`${def.emoji} ${def.name} 복원됨 (${formatTime(elapsed)} 진행 중)`);
+      }
     }
   } catch(e){}
 }
