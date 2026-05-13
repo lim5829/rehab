@@ -28,7 +28,7 @@ body {
 body.standing { background: var(--stand-bg); }
 body.walking { background: var(--walk-bg); }
 body.sitting { background: var(--sit-bg); }
-body.resting { background: var(--rest-bg); }
+body.lying, body.resting { background: var(--rest-bg); }
 .blob { position: fixed; border-radius: 50%; filter: blur(70px); opacity: 0.3; pointer-events: none; z-index: 0; }
 .blob-1 { width: 280px; height: 280px; top: -80px; right: -60px; background: radial-gradient(circle, #ffb3c6, #ffd6a5); }
 .blob-2 { width: 220px; height: 220px; bottom: -40px; left: -40px; background: radial-gradient(circle, #a0d8ef, #c3b1e1); }
@@ -45,7 +45,7 @@ body.resting { background: var(--rest-bg); }
 body.standing .status-card::before { background: linear-gradient(90deg, var(--stand-c2), var(--stand-c)); }
 body.walking .status-card::before { background: linear-gradient(90deg, var(--walk-c2), var(--walk-c)); }
 body.sitting .status-card::before { background: linear-gradient(90deg, var(--sit-c2), var(--sit-c)); }
-body.resting .status-card::before { background: linear-gradient(90deg, var(--rest-c2), var(--rest-c)); }
+body.lying .status-card::before, body.resting .status-card::before { background: linear-gradient(90deg, var(--rest-c2), var(--rest-c)); }
 .status-emoji { font-size: 44px; margin-bottom: 8px; line-height: 1; }
 .status-label { font-size: 13px; color: var(--text-dim); font-weight: 600; letter-spacing: 1px; margin-bottom: 4px; }
 .status-name { font-size: 22px; font-weight: 700; margin-bottom: 16px; }
@@ -60,13 +60,15 @@ body.sitting .timer-display { color: var(--sit-c); }
 body.resting .timer-display { color: var(--rest-c); }
 .timer-sub { font-size: 13px; color: var(--text-dim); margin-bottom: 4px; }
 .timer-cumulative { font-size: 12px; color: var(--text-dim); margin-bottom: 14px; font-weight: 500; }
+.timer-cumulative.warn { color: #f0932b; font-weight: 700; }
 .timer-cumulative.over { color: #e53e3e; font-weight: 700; }
 .progress-bar { width: 100%; height: 6px; background: var(--border); border-radius: 100px; overflow: hidden; margin-bottom: 16px; }
 .progress-fill { height: 100%; border-radius: 100px; transition: width 1s linear, background 0.5s; background: #ddd; }
 body.standing .progress-fill { background: linear-gradient(90deg, var(--stand-c2), var(--stand-c)); }
 body.walking .progress-fill { background: linear-gradient(90deg, var(--walk-c2), var(--walk-c)); }
 body.sitting .progress-fill { background: linear-gradient(90deg, var(--sit-c2), var(--sit-c)); }
-body.resting .progress-fill { background: linear-gradient(90deg, var(--rest-c2), var(--rest-c)); }
+body.lying .progress-fill, body.resting .progress-fill { background: linear-gradient(90deg, var(--rest-c2), var(--rest-c)); }
+.progress-fill.warn { background: linear-gradient(90deg, #f9ca24, #f0932b) !important; }
 .progress-fill.over { background: linear-gradient(90deg, #ff6b6b, #e53e3e) !important; }
 .action-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; }
 .action-btn { padding: 14px 4px; border-radius: var(--radius-sm); border: 2px solid var(--border); background: white; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; font-family: 'Noto Sans KR', sans-serif; font-weight: 700; color: var(--text-dim); transition: all 0.2s; touch-action: manipulation; }
@@ -74,7 +76,7 @@ body.resting .progress-fill { background: linear-gradient(90deg, var(--rest-c2),
 .action-btn.active-stand { background: linear-gradient(135deg, var(--stand-c2), var(--stand-c)); color: white; border-color: transparent; box-shadow: 0 4px 16px rgba(255,107,157,0.35); }
 .action-btn.active-walk { background: linear-gradient(135deg, var(--walk-c2), var(--walk-c)); color: white; border-color: transparent; box-shadow: 0 4px 16px rgba(0,184,148,0.35); }
 .action-btn.active-sit { background: linear-gradient(135deg, var(--sit-c2), var(--sit-c)); color: white; border-color: transparent; box-shadow: 0 4px 16px rgba(240,147,43,0.35); }
-.action-btn.active-rest { background: linear-gradient(135deg, var(--rest-c2), var(--rest-c)); color: white; border-color: transparent; box-shadow: 0 4px 16px rgba(91,127,255,0.35); }
+.action-btn.active-rest, .action-btn.active-lie { background: linear-gradient(135deg, var(--rest-c2), var(--rest-c)); color: white; border-color: transparent; box-shadow: 0 4px 16px rgba(91,127,255,0.35); }
 .action-emoji { font-size: 22px; line-height: 1; }
 .action-name { font-size: 12px; }
 .stop-btn { width: 100%; padding: 14px; border-radius: var(--radius-sm); border: 1.5px solid var(--border); background: white; color: var(--text-dim); font-family: 'Noto Sans KR', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; touch-action: manipulation; transition: all 0.2s; }
@@ -116,6 +118,8 @@ body.resting .progress-fill { background: linear-gradient(90deg, var(--rest-c2),
 .alert.walk { border-left-color: var(--walk-c); }
 .alert.sit { border-left-color: var(--sit-c); }
 .alert.rest { border-left-color: var(--rest-c); }
+.alert.over { border-left-color: #e53e3e !important; background: #fff5f5; }
+.alert.over .alert-title { color: #c53030; }
 .alert-emoji { font-size: 28px; }
 .alert-text { flex: 1; }
 .alert-title { font-size: 14px; font-weight: 700; }
@@ -135,6 +139,9 @@ body.resting .progress-fill { background: linear-gradient(90deg, var(--rest-c2),
 .modal-body { padding: 0 20px 20px; overflow-y: auto; flex: 1; }
 .setting-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #f5f5fa; }
 .setting-row:last-child { border-bottom: none; }
+.settings-section { margin-bottom: 8px; }
+.settings-section + .settings-section { margin-top: 20px; }
+.settings-section-title { font-size: 13px; font-weight: 700; color: var(--text); padding: 8px 0 4px; border-bottom: 2px solid #f0f0f7; margin-bottom: 4px; }
 .setting-label { font-size: 14px; font-weight: 700; }
 .setting-sub { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
 .stepper { display: flex; align-items: center; gap: 10px; }
@@ -179,7 +186,7 @@ body.resting .progress-fill { background: linear-gradient(90deg, var(--rest-c2),
       <div class="day-counter" id="dayCounter">🌿 수술 후 50일째</div>
       <div class="week-counter" id="weekCounter">8주차 1일</div>
       <div class="header-date" id="dateText">오늘</div>
-      <div class="version-tag">v3.0</div>
+      <div class="version-tag">v4.0</div>
     </div>
     <button class="settings-btn" id="settingsBtn">⚙️</button>
   </div>
@@ -192,35 +199,35 @@ body.resting .progress-fill { background: linear-gradient(90deg, var(--rest-c2),
     <div class="timer-sub" id="timerSub">활동을 선택해주세요</div>
     <div class="timer-cumulative" id="timerCumulative"></div>
     <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
-    <div class="limit-info" id="limitInfoText">서기·걷기 20분 · 앉기 30분 · 휴식 60분 (회당)</div>
+    <div class="limit-info" id="limitInfoText">서있기 10/15 · 앉기 20/25 · 걷기 15/20 · 누워 ~60분</div>
   </div>
 
   <div class="action-grid">
-    <button class="action-btn" id="btnStand"><div class="action-emoji">🧍</div><div class="action-name">서기</div></button>
-    <button class="action-btn" id="btnWalk"><div class="action-emoji">🚶</div><div class="action-name">걷기</div></button>
+    <button class="action-btn" id="btnLie"><div class="action-emoji">🛌</div><div class="action-name">누워있기</div></button>
+    <button class="action-btn" id="btnStand"><div class="action-emoji">🧍</div><div class="action-name">서있기</div></button>
     <button class="action-btn" id="btnSit"><div class="action-emoji">🪑</div><div class="action-name">앉기</div></button>
-    <button class="action-btn" id="btnRest"><div class="action-emoji">🛌</div><div class="action-name">휴식</div></button>
+    <button class="action-btn" id="btnWalk"><div class="action-emoji">🚶</div><div class="action-name">걷기</div></button>
   </div>
 
   <button class="stop-btn" id="stopBtn" disabled>⏹ 정지</button>
 
   <div class="today-card" id="todayCard">
-    <div class="card-title">📊 오늘 합계 <span class="card-title-sub" id="todayCycles">0 사이클</span></div>
+    <div class="card-title">📊 오늘 누적 <span class="card-title-sub" id="todayCycles">0 사이클</span></div>
     <div class="today-row">
-      <div class="today-row-left"><div class="today-row-emoji row-stand">🧍</div><div><div class="today-row-name">서기</div><div class="today-row-detail" id="standDetail">0회</div></div></div>
+      <div class="today-row-left"><div class="today-row-emoji row-rest">🛌</div><div><div class="today-row-name">누워있기</div><div class="today-row-detail" id="lieDetail">0회 · 목표 720분</div></div></div>
+      <div class="today-row-time t-rest" id="lieTotal">0분</div>
+    </div>
+    <div class="today-row">
+      <div class="today-row-left"><div class="today-row-emoji row-stand">🧍</div><div><div class="today-row-name">서있기</div><div class="today-row-detail" id="standDetail">0회 · 목표 120분</div></div></div>
       <div class="today-row-time t-stand" id="standTotal">0분</div>
     </div>
     <div class="today-row">
-      <div class="today-row-left"><div class="today-row-emoji row-walk">🚶</div><div><div class="today-row-name">걷기</div><div class="today-row-detail" id="walkDetail">0회</div></div></div>
-      <div class="today-row-time t-walk" id="walkTotal">0분</div>
-    </div>
-    <div class="today-row">
-      <div class="today-row-left"><div class="today-row-emoji row-sit">🪑</div><div><div class="today-row-name">앉기</div><div class="today-row-detail" id="sitDetail">0회</div></div></div>
+      <div class="today-row-left"><div class="today-row-emoji row-sit">🪑</div><div><div class="today-row-name">앉기(등받이)</div><div class="today-row-detail" id="sitDetail">0회 · 목표 180분</div></div></div>
       <div class="today-row-time t-sit" id="sitTotal">0분</div>
     </div>
     <div class="today-row">
-      <div class="today-row-left"><div class="today-row-emoji row-rest">🛌</div><div><div class="today-row-name">휴식</div><div class="today-row-detail" id="restDetail">0회</div></div></div>
-      <div class="today-row-time t-rest" id="restTotal">0분</div>
+      <div class="today-row-left"><div class="today-row-emoji row-walk">🚶</div><div><div class="today-row-name">걷기</div><div class="today-row-detail" id="walkDetail">0회 · 목표 90분</div></div></div>
+      <div class="today-row-time t-walk" id="walkTotal">0분</div>
     </div>
   </div>
 
@@ -251,28 +258,104 @@ body.resting .progress-fill { background: linear-gradient(90deg, var(--rest-c2),
       <button class="modal-close" id="settingsClose">✕</button>
     </div>
     <div class="modal-body">
-      <div class="setting-row">
-        <div><div class="setting-label">🧍🚶 서기·걷기 (회당)</div><div class="setting-sub">한 번에 권장 시간 — 알림</div></div>
-        <div class="stepper">
-          <button class="step-btn" data-key="active" data-d="-5">−</button>
-          <div class="step-val" id="limitActive">20</div>
-          <button class="step-btn" data-key="active" data-d="5">+</button>
+      <div class="settings-section">
+        <div class="settings-section-title">⏱ 회당 권장 / 한계 (분)</div>
+
+        <div class="setting-row">
+          <div><div class="setting-label">🛌 누워있기</div><div class="setting-sub">권장 도달 시 알림 (한계 없음)</div></div>
+          <div class="stepper">
+            <button class="step-btn" data-key="lie" data-field="rec" data-d="-10">−</button>
+            <div class="step-val" id="limitLieRec">60</div>
+            <button class="step-btn" data-key="lie" data-field="rec" data-d="10">+</button>
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <div><div class="setting-label">🧍 서있기 — 권장</div><div class="setting-sub">권장 시간 도달 시 알림</div></div>
+          <div class="stepper">
+            <button class="step-btn" data-key="stand" data-field="rec" data-d="-1">−</button>
+            <div class="step-val" id="limitStandRec">10</div>
+            <button class="step-btn" data-key="stand" data-field="rec" data-d="1">+</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div><div class="setting-label">🧍 서있기 — 한계</div><div class="setting-sub">초과 시 경고 (cage 부담)</div></div>
+          <div class="stepper">
+            <button class="step-btn" data-key="stand" data-field="max" data-d="-1">−</button>
+            <div class="step-val" id="limitStandMax">15</div>
+            <button class="step-btn" data-key="stand" data-field="max" data-d="1">+</button>
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <div><div class="setting-label">🪑 앉기(등받이) — 권장</div><div class="setting-sub">권장 시간 도달 시 알림</div></div>
+          <div class="stepper">
+            <button class="step-btn" data-key="sit" data-field="rec" data-d="-1">−</button>
+            <div class="step-val" id="limitSitRec">20</div>
+            <button class="step-btn" data-key="sit" data-field="rec" data-d="1">+</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div><div class="setting-label">🪑 앉기(등받이) — 한계</div><div class="setting-sub">초과 시 경고 (cage 부담)</div></div>
+          <div class="stepper">
+            <button class="step-btn" data-key="sit" data-field="max" data-d="-1">−</button>
+            <div class="step-val" id="limitSitMax">25</div>
+            <button class="step-btn" data-key="sit" data-field="max" data-d="1">+</button>
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <div><div class="setting-label">🚶 걷기 — 권장</div><div class="setting-sub">권장 시간 도달 시 알림</div></div>
+          <div class="stepper">
+            <button class="step-btn" data-key="walk" data-field="rec" data-d="-1">−</button>
+            <div class="step-val" id="limitWalkRec">15</div>
+            <button class="step-btn" data-key="walk" data-field="rec" data-d="1">+</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div><div class="setting-label">🚶 걷기 — 한계</div><div class="setting-sub">초과 시 경고 (cage 부담)</div></div>
+          <div class="stepper">
+            <button class="step-btn" data-key="walk" data-field="max" data-d="-1">−</button>
+            <div class="step-val" id="limitWalkMax">20</div>
+            <button class="step-btn" data-key="walk" data-field="max" data-d="1">+</button>
+          </div>
         </div>
       </div>
-      <div class="setting-row">
-        <div><div class="setting-label">🪑 앉기 (회당)</div><div class="setting-sub">한 번에 권장 시간 — 알림</div></div>
-        <div class="stepper">
-          <button class="step-btn" data-key="sit" data-d="-5">−</button>
-          <div class="step-val" id="limitSit">30</div>
-          <button class="step-btn" data-key="sit" data-d="5">+</button>
+
+      <div class="settings-section">
+        <div class="settings-section-title">📊 오늘 누적 목표 (분)</div>
+
+        <div class="setting-row">
+          <div><div class="setting-label">🛌 누워있기</div><div class="setting-sub">하루 합계 목표</div></div>
+          <div class="stepper">
+            <button class="step-btn" data-daily="lie" data-d="-30">−</button>
+            <div class="step-val" id="dailyLie">720</div>
+            <button class="step-btn" data-daily="lie" data-d="30">+</button>
+          </div>
         </div>
-      </div>
-      <div class="setting-row">
-        <div><div class="setting-label">🛌 휴식 (회당)</div><div class="setting-sub">한 번에 충분히 쉬는 시간 — 알림</div></div>
-        <div class="stepper">
-          <button class="step-btn" data-key="rest" data-d="-10">−</button>
-          <div class="step-val" id="limitRest">60</div>
-          <button class="step-btn" data-key="rest" data-d="10">+</button>
+        <div class="setting-row">
+          <div><div class="setting-label">🧍 서있기</div><div class="setting-sub">하루 합계 목표</div></div>
+          <div class="stepper">
+            <button class="step-btn" data-daily="stand" data-d="-10">−</button>
+            <div class="step-val" id="dailyStand">120</div>
+            <button class="step-btn" data-daily="stand" data-d="10">+</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div><div class="setting-label">🪑 앉기</div><div class="setting-sub">하루 합계 목표</div></div>
+          <div class="stepper">
+            <button class="step-btn" data-daily="sit" data-d="-10">−</button>
+            <div class="step-val" id="dailySit">180</div>
+            <button class="step-btn" data-daily="sit" data-d="10">+</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div><div class="setting-label">🚶 걷기</div><div class="setting-sub">하루 합계 목표</div></div>
+          <div class="stepper">
+            <button class="step-btn" data-daily="walk" data-d="-10">−</button>
+            <div class="step-val" id="dailyWalk">90</div>
+            <button class="step-btn" data-daily="walk" data-d="10">+</button>
+          </div>
         </div>
       </div>
     </div>
@@ -293,20 +376,33 @@ body.resting .progress-fill { background: linear-gradient(90deg, var(--rest-c2),
 <script>
 'use strict';
 
-let LIMITS_MIN = { active: 20, sit: 30, rest: 60 };
-const LIMITS_KEY = 'recoveryLimits_v1';
+const LIMITS_KEY = 'recoveryLimits_v2';
+const DAILY_KEY = 'recoveryDaily_v2';
 const SURGERY = new Date('2026-03-18T00:00:00');
-const STORE_KEY = 'recoveryTimer_v3';
-const HISTORY_KEY = 'recoveryHistory_v3';
+const STORE_KEY = 'recoveryTimer_v4';
+const HISTORY_KEY = 'recoveryHistory_v4';
 
 const ACTIONS = {
-  stand: { emoji:'🧍', name:'서기', cls:'standing', btnCls:'active-stand', group:'active', limitType:'session', limitKey:'active' },
-  walk:  { emoji:'🚶', name:'걷기', cls:'walking',  btnCls:'active-walk',  group:'active', limitType:'session', limitKey:'active' },
-  sit:   { emoji:'🪑', name:'앉기', cls:'sitting',  btnCls:'active-sit',   group:'sit',    limitType:'session', limitKey:'sit' },
-  rest:  { emoji:'🛌', name:'휴식', cls:'resting',  btnCls:'active-rest',  group:'rest',   limitType:'session', limitKey:'rest' },
+  lie:   { emoji:'🛌', name:'누워있기',     cls:'lying',    btnCls:'active-lie',   limitKey:'lie',   noLimit:true  }, // 한계 없음, 권장만
+  stand: { emoji:'🧍', name:'서있기',       cls:'standing', btnCls:'active-stand', limitKey:'stand', noLimit:false },
+  sit:   { emoji:'🪑', name:'앉기(등받이)', cls:'sitting',  btnCls:'active-sit',   limitKey:'sit',   noLimit:false },
+  walk:  { emoji:'🚶', name:'걷기',         cls:'walking',  btnCls:'active-walk',  limitKey:'walk',  noLimit:false },
 };
 
-let S = { current: null, startTime: null, alerted: false, timer: null };
+// 회당 권장/한계 (분). lie는 권장만 사용.
+const DEFAULT_LIMITS = {
+  lie:   { rec: 60, max: 120 },   // 누워있기: 권장 60분 도달 시 알림
+  stand: { rec: 10, max: 15 },
+  sit:   { rec: 20, max: 25 },
+  walk:  { rec: 15, max: 20 },
+};
+// 오늘 누적 목표 (분)
+const DEFAULT_DAILY = { stand: 120, walk: 90, sit: 180, lie: 720 };
+
+let LIMITS_MIN = JSON.parse(JSON.stringify(DEFAULT_LIMITS));
+let DAILY_MIN  = Object.assign({}, DEFAULT_DAILY);
+
+let S = { current: null, startTime: null, alertedRec: false, alertedMax: false, timer: null };
 let history = {};
 
 const $ = id => document.getElementById(id);
@@ -335,13 +431,26 @@ const getSec = (rec) => {
 function loadLimits() {
   try {
     const raw = localStorage.getItem(LIMITS_KEY);
-    if (raw) LIMITS_MIN = { ...LIMITS_MIN, ...JSON.parse(raw) };
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      // 각 키별로 머지 (rec, max 모두 보존)
+      Object.keys(LIMITS_MIN).forEach(k => {
+        if (parsed[k]) LIMITS_MIN[k] = { ...LIMITS_MIN[k], ...parsed[k] };
+      });
+    }
+  } catch(e){}
+  try {
+    const raw = localStorage.getItem(DAILY_KEY);
+    if (raw) DAILY_MIN = { ...DAILY_MIN, ...JSON.parse(raw) };
   } catch(e){}
 }
 function saveLimits() {
   try { localStorage.setItem(LIMITS_KEY, JSON.stringify(LIMITS_MIN)); } catch(e){}
+  try { localStorage.setItem(DAILY_KEY, JSON.stringify(DAILY_MIN)); } catch(e){}
 }
-function L(group) { return LIMITS_MIN[group] * 60; }
+// 회당 권장/한계 (초 단위)
+function recSec(key) { return LIMITS_MIN[key].rec * 60; }
+function maxSec(key) { return LIMITS_MIN[key].max * 60; }
 
 function beep(freq, dur=0.2, vol=0.3) {
   try {
@@ -368,7 +477,6 @@ function vib(p) { if (navigator.vibrate) navigator.vibrate(p); }
 // 전략 2: Wake Lock으로 화면 켜진 동안 페이지 유지
 // 전략 3: 복귀 시 만료 감지 → 즉시 강력 알림 (visibilitychange/focus)
 // ============================================================
-let _notifTimer = null;
 let _wakeLock = null;
 
 async function requestWakeLock() {
@@ -393,72 +501,100 @@ async function ensureNotifPermission() {
   } catch(e) { return false; }
 }
 
+let _notifTimerRec = null;
+let _notifTimerMax = null;
+
 function scheduleNotification() {
   cancelNotification();
   if (!S.current || !S.startTime) return;
   const def = ACTIONS[S.current];
-  const limitMs = LIMITS_MIN[def.limitKey] * 60 * 1000;
-  const fireAt = S.startTime + limitMs;
-  const delay = fireAt - Date.now();
-  // 이미 지났거나 너무 가까운 경우: 즉시 처리는 updateTick이 함
-  if (delay <= 0) return;
-  // setTimeout은 포그라운드/얕은 백그라운드에서만 신뢰 가능
-  _notifTimer = setTimeout(() => {
-    _notifTimer = null;
-    if (!S.current) return;
-    // 화면 보이면 updateTick이 알아서 처리 (중복 방지)
-    if (document.visibilityState === 'visible' && S.alerted) return;
-    if (!S.alerted) {
-      S.alerted = true;
-      saveState();
-    }
-    fireNotification(S.current);
-    playAlert();
-    vib([400, 150, 400, 150, 600]);
-  }, delay);
-  // 화면이 켜져 있으면 Wake Lock 시도 (가능한 한 페이지 살아있게)
+  const recMs = recSec(def.limitKey) * 1000;
+  const maxMs = maxSec(def.limitKey) * 1000;
+  const recAt = S.startTime + recMs - Date.now();
+  const maxAt = S.startTime + maxMs - Date.now();
+
+  if (recAt > 0 && !S.alertedRec) {
+    _notifTimerRec = setTimeout(() => {
+      _notifTimerRec = null;
+      if (!S.current) return;
+      if (document.visibilityState === 'visible' && S.alertedRec) return;
+      if (!S.alertedRec) { S.alertedRec = true; saveState(); }
+      fireNotification(S.current, 'rec');
+      playAlert();
+      vib([200, 80, 200]);
+    }, recAt);
+  }
+  if (!def.noLimit && maxAt > 0 && !S.alertedMax) {
+    _notifTimerMax = setTimeout(() => {
+      _notifTimerMax = null;
+      if (!S.current) return;
+      if (document.visibilityState === 'visible' && S.alertedMax) return;
+      if (!S.alertedMax) { S.alertedMax = true; saveState(); }
+      fireNotification(S.current, 'max');
+      playAlert();
+      vib([400, 150, 400, 150, 600]);
+    }, maxAt);
+  }
   requestWakeLock();
 }
 
 function cancelNotification() {
-  if (_notifTimer) { clearTimeout(_notifTimer); _notifTimer = null; }
-  releaseWakeLock();}
+  if (_notifTimerRec) { clearTimeout(_notifTimerRec); _notifTimerRec = null; }
+  if (_notifTimerMax) { clearTimeout(_notifTimerMax); _notifTimerMax = null; }
+  releaseWakeLock();
+}
 
-function fireNotification(action) {
+function fireNotification(action, kind) {
   if (!('Notification' in window) || Notification.permission !== 'granted') return;
   const def = ACTIONS[action];
-  const mins = LIMITS_MIN[def.limitKey];
-  const title = `${def.emoji} ${def.name} ${mins}분 완료`;
-  let body;
-  if (action === 'stand' || action === 'walk') body = '이제 앉거나 누워서 쉬세요';
-  else if (action === 'sit') body = '이제 누워서 충분히 쉬세요';
-  else body = '충분히 쉬셨어요. 천천히 활동을 시작해도 좋아요';
+  const lim = LIMITS_MIN[def.limitKey];
+  let title, body;
+  if (kind === 'rec') {
+    if (def.noLimit) {
+      title = `${def.emoji} ${def.name} ${lim.rec}분 도달`;
+      body = '충분히 쉬셨어요. 활동 시작해도 좋아요';
+    } else {
+      title = `${def.emoji} ${def.name} 권장 ${lim.rec}분`;
+      body = `한계 ${lim.max}분 전 자세를 바꾸세요`;
+    }
+  } else {
+    title = `⚠ ${def.name} 한계 ${lim.max}분 초과`;
+    body = '지금 즉시 자세를 바꿔주세요';
+  }
   try {
     const n = new Notification(title, {
       body,
-      tag: 'recovery-timer-' + action,
-      requireInteraction: true,
-      vibrate: [400, 150, 400, 150, 600],
+      tag: 'recovery-timer-' + action + '-' + kind,
+      requireInteraction: kind === 'max',
+      vibrate: kind === 'max' ? [400, 150, 400, 150, 600] : [200, 80, 200],
       silent: false,
     });
     n.onclick = () => { window.focus(); n.close(); };
   } catch(e){}
 }
 
-// 복귀 시 만료 감지: 백그라운드에서 시간이 지났는데 알림이 안 떴으면 즉시 처리
+// 복귀 시 만료 감지
 function checkExpiryOnReturn() {
   if (!S.current || !S.startTime) return;
-  if (S.alerted) return;
   const def = ACTIONS[S.current];
-  const limit = LIMITS_MIN[def.limitKey] * 60;
   const elapsed = Math.round((Date.now() - S.startTime) / 1000);
-  if (elapsed >= limit) {
-    S.alerted = true;
+  const rec = recSec(def.limitKey);
+  const max = maxSec(def.limitKey);
+  if (!S.alertedRec && elapsed >= rec) {
+    S.alertedRec = true;
     saveState();
-    showAlert(S.current);
+    showAlert(S.current, 'rec');
+    playAlert();
+    vib([200, 80, 200]);
+    fireNotification(S.current, 'rec');
+  }
+  if (!def.noLimit && !S.alertedMax && elapsed >= max) {
+    S.alertedMax = true;
+    saveState();
+    showAlert(S.current, 'max');
     playAlert();
     vib([400, 150, 400, 150, 600]);
-    fireNotification(S.current);
+    fireNotification(S.current, 'max');
   }
 }
 
@@ -489,7 +625,8 @@ function startActivity(action) {
   if (S.current) stopActivity(false);
   S.current = action;
   S.startTime = Date.now();
-  S.alerted = false; // 세션 기반: 이번 세션에서 알림 이미 울렸는지
+  S.alertedRec = false;
+  S.alertedMax = false;
   const def = ACTIONS[action];
   // 즉시 저장 (백그라운드 종료 대비 - 시작하자마자 박아넣기)
   saveState();
@@ -517,7 +654,8 @@ function stopActivity(showMsg) {
   if (elapsed >= 5) saveToHistory(action, elapsed, startTs);
   S.current = null;
   S.startTime = null;
-  S.alerted = false;
+  S.alertedRec = false;
+  S.alertedMax = false;
   clearInterval(S.timer);
   cancelNotification(); // 예약 알림/Wake Lock 해제
   try { localStorage.removeItem(STORE_KEY); } catch(e){}
@@ -550,61 +688,92 @@ function startTick() {
 
 function updateTick() {
   if (!S.current) return;
-  // 매 tick마다 저장 (OS가 백그라운드 페이지 강제 종료해도 최대 1초 손실)
   saveState();
   const elapsed = getSessionElapsed();
   const def = ACTIONS[S.current];
-  const limit = LIMITS_MIN[def.limitKey] * 60;
+  const rec = recSec(def.limitKey);
+  const max = maxSec(def.limitKey);
   $('timerDisplay').textContent = formatTime(elapsed);
   $('timerSub').textContent = `이번 세션 ${formatTime(elapsed)}`;
-  const isOver = elapsed >= limit;
-  if (def.limitKey === 'rest') {
-    $('timerCumulative').textContent = isOver
-      ? `${formatMin(elapsed)} / ${limit/60}분 ✓ 충분히 쉬셨어요`
-      : `${formatMin(elapsed)} / ${limit/60}분`;
-  } else {
-    $('timerCumulative').textContent = isOver
-      ? `${formatMin(elapsed)} / ${limit/60}분 ⚠ ${formatMin(elapsed - limit)} 초과`
-      : `${formatMin(elapsed)} / ${limit/60}분`;
-  }
-  if (!isOver) {
-    $('timerCumulative').className = 'timer-cumulative';
-    $('progressFill').style.width = Math.min(100, (elapsed/limit)*100) + '%';
+
+  // 상태 텍스트 & 진행바
+  let statusText, statusCls;
+  if (def.noLimit) {
+    // 누워있기: 권장 도달 시 ✓ 표시만, 한계 개념 없음
+    if (elapsed < rec) {
+      statusText = `${formatMin(elapsed)} / 권장 ${rec/60}분`;
+      statusCls = 'timer-cumulative';
+    } else {
+      statusText = `${formatMin(elapsed)} ✓ 충분히 쉬셨어요`;
+      statusCls = 'timer-cumulative';
+    }
+    $('progressFill').style.width = Math.min(100, (elapsed/rec)*100) + '%';
+    $('progressFill').classList.remove('over');
+  } else if (elapsed < rec) {
+    statusText = `${formatMin(elapsed)} / 권장 ${rec/60}분 · 한계 ${max/60}분`;
+    statusCls = 'timer-cumulative';
+    $('progressFill').style.width = Math.min(100, (elapsed/rec)*100) + '%';
+    $('progressFill').classList.remove('over');
+  } else if (elapsed < max) {
+    statusText = `${formatMin(elapsed)} · 권장 초과 · 한계 ${max/60}분`;
+    statusCls = 'timer-cumulative warn';
+    const span = max - rec;
+    const into = elapsed - rec;
+    $('progressFill').style.width = (100 - (into/span)*100) + '%';
+    $('progressFill').classList.add('warn');
     $('progressFill').classList.remove('over');
   } else {
-    // 휴식이 아닐 때만 빨간색 초과 표시
-    $('timerCumulative').className = (def.limitKey === 'rest')
-      ? 'timer-cumulative' : 'timer-cumulative over';
+    statusText = `${formatMin(elapsed)} ⚠ 한계 ${formatMin(elapsed - max)} 초과`;
+    statusCls = 'timer-cumulative over';
     $('progressFill').style.width = '100%';
-    if (def.limitKey !== 'rest') $('progressFill').classList.add('over');
-    if (!S.alerted) {
-      S.alerted = true;
-      saveState();
-      showAlert(S.current);
-      playAlert();
-      vib([300, 100, 300, 100, 500]);
-      fireNotification(S.current); // 포그라운드여도 OS 알림 한 번
-    }
+    $('progressFill').classList.remove('warn');
+    $('progressFill').classList.add('over');
+  }
+  $('timerCumulative').textContent = statusText;
+  $('timerCumulative').className = statusCls;
+
+  // 알림: 권장 도달 / 한계 초과 두 단계
+  if (!S.alertedRec && elapsed >= rec) {
+    S.alertedRec = true;
+    saveState();
+    showAlert(S.current, 'rec');
+    playAlert();
+    vib([200, 80, 200]);
+    fireNotification(S.current, 'rec');
+  }
+  if (!def.noLimit && !S.alertedMax && elapsed >= max) {
+    S.alertedMax = true;
+    saveState();
+    showAlert(S.current, 'max');
+    playAlert();
+    vib([400, 150, 400, 150, 600]);
+    fireNotification(S.current, 'max');
   }
 }
 
-function showAlert(action) {
+function showAlert(action, kind) {
   const banner = $('alertBanner');
   const def = ACTIONS[action];
-  const mins = LIMITS_MIN[def.limitKey];
+  const lim = LIMITS_MIN[def.limitKey];
   $('alertEmoji').textContent = def.emoji;
-  if (action === 'stand' || action === 'walk') {
-    $('alertTitle').textContent = `${def.name} ${mins}분 완료`;
-    $('alertSub').textContent = '이제 앉거나 누워서 쉬는 게 좋아요';
-    banner.className = 'alert show ' + (action === 'stand' ? 'stand' : 'walk');
-  } else if (action === 'sit') {
-    $('alertTitle').textContent = `앉기 ${mins}분 완료`;
-    $('alertSub').textContent = '이제 누워서 충분히 쉬세요';
-    banner.className = 'alert show sit';
-  } else {
-    $('alertTitle').textContent = `휴식 ${mins}분 완료`;
-    $('alertSub').textContent = '충분히 쉬셨어요. 천천히 활동 시작해도 좋아요';
-    banner.className = 'alert show rest';
+  const colorCls = action === 'lie' ? 'rest'
+    : action === 'stand' ? 'stand'
+    : action === 'walk' ? 'walk'
+    : 'sit';
+  if (kind === 'rec') {
+    if (def.noLimit) {
+      // 누워있기: 권장 도달 = 충분히 쉼
+      $('alertTitle').textContent = `${def.name} ${lim.rec}분 도달`;
+      $('alertSub').textContent = '충분히 쉬셨어요. 활동 시작해도 좋아요';
+    } else {
+      $('alertTitle').textContent = `${def.name} 권장 ${lim.rec}분 도달`;
+      $('alertSub').textContent = `한계 ${lim.max}분 전 자세를 바꾸세요`;
+    }
+    banner.className = 'alert show ' + colorCls;
+  } else { // 'max'
+    $('alertTitle').textContent = `⚠ ${def.name} 한계 ${lim.max}분 초과`;
+    $('alertSub').textContent = '지금 즉시 자세를 바꿔주세요 (cage 부담)';
+    banner.className = 'alert show over ' + colorCls;
   }
   setTimeout(() => banner.classList.remove('show'), 8000);
 }
@@ -623,7 +792,8 @@ function saveState() {
       localStorage.setItem(STORE_KEY, JSON.stringify({
         current: S.current,
         startTime: S.startTime,
-        alerted: S.alerted,
+        alertedRec: S.alertedRec,
+        alertedMax: S.alertedMax,
         lastSaved: Date.now(),
       }));
     }
@@ -645,7 +815,8 @@ function loadState() {
       const def = ACTIONS[v.current];
       S.current = v.current;
       S.startTime = v.startTime;
-      S.alerted = v.alerted || false;
+      S.alertedRec = v.alertedRec || false;
+      S.alertedMax = v.alertedMax || false;
       document.body.className = def.cls;
       $('statusEmoji').textContent = def.emoji;
       $('statusName').textContent = def.name + ' 중';
@@ -665,14 +836,39 @@ function loadState() {
 
 function loadHistory() {
   try {
-    const raw = localStorage.getItem(HISTORY_KEY);
-    if (raw) history = JSON.parse(raw);
+    let raw = localStorage.getItem(HISTORY_KEY);
+    if (!raw) {
+      // v3에서 마이그레이션 시도 (rest -> lie)
+      const oldRaw = localStorage.getItem('recoveryHistory_v3');
+      if (oldRaw) {
+        try {
+          const oldH = JSON.parse(oldRaw);
+          const newH = {};
+          Object.keys(oldH).forEach(dateKey => {
+            const day = oldH[dateKey];
+            newH[dateKey] = {
+              lie: day.rest || [],
+              stand: day.stand || [],
+              sit: day.sit || [],
+              walk: day.walk || [],
+            };
+          });
+          history = newH;
+          localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+          return;
+        } catch(e) {}
+      }
+      history = {};
+      return;
+    }
+    history = JSON.parse(raw);
   } catch(e){ history = {}; }
 }
 
 function saveToHistory(action, seconds, startTs) {
   const key = todayKey();
-  if (!history[key]) history[key] = { stand:[], walk:[], sit:[], rest:[] };
+  if (!history[key]) history[key] = { lie:[], stand:[], sit:[], walk:[] };
+  if (!history[key][action]) history[key][action] = [];
   history[key][action].push({
     sec: seconds,
     start: startTs,
@@ -683,16 +879,23 @@ function saveToHistory(action, seconds, startTs) {
 
 function renderToday() {
   const key = todayKey();
-  const today = history[key] || { stand:[], walk:[], sit:[], rest:[] };
-  ['stand','walk','sit','rest'].forEach(action => {
+  const today = history[key] || { lie:[], stand:[], sit:[], walk:[] };
+  ['lie','stand','sit','walk'].forEach(action => {
     const arr = today[action] || [];
     const total = arr.reduce((a,r)=>a+getSec(r), 0);
     const count = arr.length;
-    const avg = count>0 ? Math.round(total/count) : 0;
+    const targetMin = DAILY_MIN[action];
+    const totalMin = Math.floor(total / 60);
+    const pct = targetMin > 0 ? Math.round((totalMin / targetMin) * 100) : 0;
     $(`${action}Total`).textContent = formatHM(total);
-    $(`${action}Detail`).textContent = count>0 ? `${count}회 · 평균 ${formatMin(avg)}` : '0회';
+    if (count > 0) {
+      $(`${action}Detail`).textContent = `${count}회 · 목표 ${targetMin}분 (${pct}%)`;
+    } else {
+      $(`${action}Detail`).textContent = `0회 · 목표 ${targetMin}분`;
+    }
   });
-  $('todayCycles').textContent = `${(today.rest||[]).length} 사이클`;
+  // 사이클 = 누워있기 횟수 (한 번 누웠다 일어났다가 한 사이클)
+  $('todayCycles').textContent = `${(today.lie||[]).length} 사이클`;
 }
 
 function renderHistory() {
@@ -704,16 +907,16 @@ function renderHistory() {
   }
   list.innerHTML = keys.map(k => {
     const day = history[k];
+    const lieT = (day.lie||[]).reduce((a,r)=>a+getSec(r),0);
     const standT = (day.stand||[]).reduce((a,r)=>a+getSec(r),0);
-    const walkT = (day.walk||[]).reduce((a,r)=>a+getSec(r),0);
     const sitT = (day.sit||[]).reduce((a,r)=>a+getSec(r),0);
-    const restT = (day.rest||[]).reduce((a,r)=>a+getSec(r),0);
-    const total = standT + walkT + sitT + restT;
-    const cycles = (day.rest||[]).length;
+    const walkT = (day.walk||[]).reduce((a,r)=>a+getSec(r),0);
+    const total = lieT + standT + sitT + walkT;
+    const cycles = (day.lie||[]).length;
+    const liePct = total>0 ? (lieT/total)*100 : 0;
     const standPct = total>0 ? (standT/total)*100 : 0;
-    const walkPct = total>0 ? (walkT/total)*100 : 0;
     const sitPct = total>0 ? (sitT/total)*100 : 0;
-    const restPct = total>0 ? (restT/total)*100 : 0;
+    const walkPct = total>0 ? (walkT/total)*100 : 0;
     const dateLabel = formatDateLabel(k);
     return `<div class="history-day" data-key="${k}">
       <div class="history-day-header">
@@ -721,16 +924,16 @@ function renderHistory() {
         <div class="history-day-cycles">${cycles}사이클 · 총 ${formatHM(total)}</div>
       </div>
       <div class="history-day-bars">
+        <div class="bar-rest" style="width:${liePct}%"></div>
         <div class="bar-stand" style="width:${standPct}%"></div>
-        <div class="bar-walk" style="width:${walkPct}%"></div>
         <div class="bar-sit" style="width:${sitPct}%"></div>
-        <div class="bar-rest" style="width:${restPct}%"></div>
+        <div class="bar-walk" style="width:${walkPct}%"></div>
       </div>
       <div class="history-day-times">
+        <span class="t-rest">🛌${formatHM(lieT)}</span>
         <span class="t-stand">🧍${formatHM(standT)}</span>
-        <span class="t-walk">🚶${formatHM(walkT)}</span>
         <span class="t-sit">🪑${formatHM(sitT)}</span>
-        <span class="t-rest">🛌${formatHM(restT)}</span>
+        <span class="t-walk">🚶${formatHM(walkT)}</span>
       </div>
     </div>`;
   }).join('');
@@ -763,32 +966,54 @@ function updateDayCounter() {
 
 function renderLimitInfo() {
   $('limitInfoText').textContent =
-    `서기·걷기 ${LIMITS_MIN.active}분 · 앉기 ${LIMITS_MIN.sit}분 · 휴식 ${LIMITS_MIN.rest}분 (회당)`;
-  $('limitActive').textContent = LIMITS_MIN.active;
-  $('limitSit').textContent = LIMITS_MIN.sit;
-  $('limitRest').textContent = LIMITS_MIN.rest;
+    `서있기 ${LIMITS_MIN.stand.rec}/${LIMITS_MIN.stand.max} · 앉기 ${LIMITS_MIN.sit.rec}/${LIMITS_MIN.sit.max} · 걷기 ${LIMITS_MIN.walk.rec}/${LIMITS_MIN.walk.max} · 누워 ~${LIMITS_MIN.lie.rec}분`;
+  // 회당 권장/한계
+  $('limitLieRec').textContent = LIMITS_MIN.lie.rec;
+  $('limitStandRec').textContent = LIMITS_MIN.stand.rec;
+  $('limitStandMax').textContent = LIMITS_MIN.stand.max;
+  $('limitSitRec').textContent = LIMITS_MIN.sit.rec;
+  $('limitSitMax').textContent = LIMITS_MIN.sit.max;
+  $('limitWalkRec').textContent = LIMITS_MIN.walk.rec;
+  $('limitWalkMax').textContent = LIMITS_MIN.walk.max;
+  // 일일 목표
+  $('dailyLie').textContent = DAILY_MIN.lie;
+  $('dailyStand').textContent = DAILY_MIN.stand;
+  $('dailySit').textContent = DAILY_MIN.sit;
+  $('dailyWalk').textContent = DAILY_MIN.walk;
 }
 
-function changeLimit(key, delta) {
-  const newVal = LIMITS_MIN[key] + delta;
-  const min = key === 'rest' ? 10 : 5;
-  const max = key === 'rest' ? 180 : 120;
-  if (newVal < min || newVal > max) return;
-  LIMITS_MIN[key] = newVal;
+function changeLimit(key, field, delta) {
+  if (!LIMITS_MIN[key] || !(field in LIMITS_MIN[key])) return;
+  const newVal = LIMITS_MIN[key][field] + delta;
+  if (newVal < 1 || newVal > 240) return;
+  // rec <= max 보장 (lie는 max도 있지만 사용 안 함)
+  if (field === 'rec' && newVal > LIMITS_MIN[key].max) return;
+  if (field === 'max' && newVal < LIMITS_MIN[key].rec) return;
+  LIMITS_MIN[key][field] = newVal;
   saveLimits();
   renderLimitInfo();
   if (S.current) {
-    // 진행 중인 활동의 설정이 바뀌면 알림 재예약
     const def = ACTIONS[S.current];
     if (def.limitKey === key) {
       const elapsed = getSessionElapsed();
-      const newLimit = newVal * 60;
-      // 새 설정 기준 아직 안 넘었으면 alerted 리셋
-      if (elapsed < newLimit) S.alerted = false;
+      // 새 설정 기준 아직 안 넘었으면 알림 플래그 리셋
+      if (elapsed < recSec(key)) S.alertedRec = false;
+      if (elapsed < maxSec(key)) S.alertedMax = false;
       scheduleNotification();
     }
     updateTick();
   }
+}
+
+function changeDaily(key, delta) {
+  if (!(key in DAILY_MIN)) return;
+  const step = delta;
+  const newVal = DAILY_MIN[key] + step;
+  if (newVal < 10 || newVal > 1440) return;
+  DAILY_MIN[key] = newVal;
+  saveLimits();
+  renderLimitInfo();
+  renderToday();
 }
 
 function formatHHMM(ts) {
@@ -797,12 +1022,12 @@ function formatHHMM(ts) {
 }
 
 function showDetail(dateKey) {
-  const day = history[dateKey] || { stand:[], walk:[], sit:[], rest:[] };
+  const day = history[dateKey] || { lie:[], stand:[], sit:[], walk:[] };
   const label = formatDateLabel(dateKey);
   $('detailTitle').textContent = `📋 ${label} 상세 기록`;
   const body = $('detailBody');
   const allSessions = [];
-  ['stand','walk','sit','rest'].forEach(action => {
+  ['lie','stand','sit','walk'].forEach(action => {
     (day[action]||[]).forEach(rec => {
       allSessions.push({
         action,
@@ -812,13 +1037,14 @@ function showDetail(dateKey) {
       });
     });
   });
-  const totals = { stand:0, walk:0, sit:0, rest:0 };
+  const totals = { lie:0, stand:0, sit:0, walk:0 };
   allSessions.forEach(s => totals[s.action] += s.sec);
   let summaryHtml = '<div class="detail-summary">';
-  ['stand','walk','sit','rest'].forEach(action => {
+  ['lie','stand','sit','walk'].forEach(action => {
     const def = ACTIONS[action];
     const count = allSessions.filter(s => s.action === action).length;
-    summaryHtml += `<div class="summary-item ${action}-sum">
+    const sumCls = action === 'lie' ? 'rest-sum' : action + '-sum';
+    summaryHtml += `<div class="summary-item ${sumCls}">
       <div class="summary-emoji">${def.emoji}</div>
       <div class="summary-text">
         <div class="summary-time">${formatHM(totals[action])}</div>
@@ -841,8 +1067,9 @@ function showDetail(dateKey) {
   let html = summaryHtml + '<div class="timeline-title">⏱ 시간순 기록</div><div class="timeline">';
   allSessions.forEach(s => {
     const def = ACTIONS[s.action];
+    const tlCls = s.action === 'lie' ? 'tl-rest' : 'tl-' + s.action;
     const timeRange = (s.start && s.end) ? `${formatHHMM(s.start)} ~ ${formatHHMM(s.end)}` : '시간 정보 없음';
-    html += `<div class="tl-item tl-${s.action}">
+    html += `<div class="tl-item ${tlCls}">
       <div class="tl-emoji">${def.emoji}</div>
       <div class="tl-body">
         <div class="tl-top">
@@ -907,10 +1134,10 @@ function bindBtn(id, action) {
   btn.addEventListener('click', h);
   btn.addEventListener('touchend', h, { passive: false });
 }
+bindBtn('btnLie', 'lie');
 bindBtn('btnStand', 'stand');
-bindBtn('btnWalk', 'walk');
 bindBtn('btnSit', 'sit');
-bindBtn('btnRest', 'rest');
+bindBtn('btnWalk', 'walk');
 
 const stopBtn = $('stopBtn');
 const stopH = debounceTap(() => stopActivity(true));
@@ -929,7 +1156,14 @@ $('detailModal').addEventListener('click', (e) => {
 });
 
 document.querySelectorAll('.step-btn').forEach(btn => {
-  const h = debounceTap(() => changeLimit(btn.dataset.key, parseInt(btn.dataset.d)));
+  const h = debounceTap(() => {
+    const delta = parseInt(btn.dataset.d);
+    if (btn.dataset.daily) {
+      changeDaily(btn.dataset.daily, delta);
+    } else if (btn.dataset.key && btn.dataset.field) {
+      changeLimit(btn.dataset.key, btn.dataset.field, delta);
+    }
+  });
   btn.addEventListener('click', h);
   btn.addEventListener('touchend', h, { passive: false });
 });
