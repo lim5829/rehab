@@ -22,7 +22,7 @@
 body {
   font-family: 'Noto Sans KR', sans-serif;
   background: var(--bg); color: var(--text);
-  min-height: 100vh; padding: 24px 16px 60px;
+  min-height: 100vh; padding: 14px 16px 60px;
   transition: background 0.6s ease; overflow-x: hidden;
 }
 body.standing { background: var(--stand-bg); }
@@ -32,13 +32,11 @@ body.lying, body.resting { background: var(--rest-bg); }
 .blob { position: fixed; border-radius: 50%; filter: blur(70px); opacity: 0.3; pointer-events: none; z-index: 0; }
 .blob-1 { width: 280px; height: 280px; top: -80px; right: -60px; background: radial-gradient(circle, #ffb3c6, #ffd6a5); }
 .blob-2 { width: 220px; height: 220px; bottom: -40px; left: -40px; background: radial-gradient(circle, #a0d8ef, #c3b1e1); }
-.container { position: relative; z-index: 1; max-width: 420px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
-.header { display: flex; align-items: flex-start; justify-content: space-between; padding: 4px; }
-.day-counter { font-family: 'Nunito', sans-serif; font-size: 20px; font-weight: 800; background: linear-gradient(135deg, #ff6b9d, #5b7fff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.week-counter { font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 700; color: var(--text-dim); margin-top: 2px; letter-spacing: 0.5px; }
-.header-date { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
-.version-tag { font-size: 9px; color: #ccc; margin-top: 2px; font-family: 'Nunito', sans-serif; }
-.settings-btn { width: 44px; height: 44px; border-radius: 50%; border: none; background: white; box-shadow: 0 2px 12px var(--shadow); font-size: 18px; cursor: pointer; touch-action: manipulation; transition: transform 0.2s; }
+.container { position: relative; z-index: 1; max-width: 420px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
+.header { display: flex; align-items: center; justify-content: space-between; padding: 2px 4px; gap: 8px; }
+.header-info { flex: 1; min-width: 0; }
+.day-counter { font-family: 'Nunito', sans-serif; font-size: 15px; font-weight: 800; background: linear-gradient(135deg, #ff6b9d, #5b7fff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1.3; }
+.settings-btn { width: 38px; height: 38px; border-radius: 50%; border: none; background: white; box-shadow: 0 2px 12px var(--shadow); font-size: 16px; cursor: pointer; touch-action: manipulation; transition: transform 0.2s; flex-shrink: 0; }
 .settings-btn:active { transform: scale(0.9); }
 .status-card { background: white; border-radius: var(--radius); padding: 28px 20px; box-shadow: 0 4px 20px var(--shadow); text-align: center; position: relative; overflow: hidden; }
 .status-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: #ddd; transition: background 0.5s; }
@@ -147,6 +145,7 @@ body.lying .progress-fill, body.resting .progress-fill { background: linear-grad
 .stepper { display: flex; align-items: center; gap: 10px; }
 .step-btn { width: 36px; height: 36px; border-radius: 50%; border: none; background: linear-gradient(135deg,#f5f5fa,#ededf5); color: var(--text); font-size: 18px; font-weight: 700; cursor: pointer; box-shadow: 0 2px 6px var(--shadow); touch-action: manipulation; }
 .step-btn:active { transform: scale(0.9); }
+.date-input { font-family: 'Nunito', sans-serif; font-size: 14px; padding: 8px 10px; border: 1.5px solid var(--border); border-radius: 10px; background: white; color: var(--text); }
 .step-val { font-family: 'Nunito', sans-serif; font-size: 18px; font-weight: 800; min-width: 40px; text-align: center; }
 .detail-summary { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; margin-bottom: 20px; }
 .summary-item { background: #f9f9fc; border-radius: 12px; padding: 12px 6px; text-align: center; }
@@ -174,6 +173,13 @@ body.lying .progress-fill, body.resting .progress-fill { background: linear-grad
 .history-day:active { transform: scale(0.98); }
 .today-card { cursor: pointer; touch-action: manipulation; }
 .session-empty { color: var(--text-dim); font-size: 12px; padding: 8px 0; text-align: center; }
+.streak-line { display: flex; align-items: center; gap: 4px; margin-top: 1px; flex-wrap: wrap; }
+.streak-mini { font-size: 11px; color: var(--text-dim); font-weight: 600; }
+.streak-mini .num { font-family: 'Nunito', sans-serif; font-weight: 800; color: #00b894; font-size: 12px; }
+#drinkStreak .num { color: #f0932b; }
+.streak-sep { font-size: 11px; color: var(--text-dim); opacity: 0.5; }
+.streak-reset-mini { margin-left: 2px; width: 18px; height: 18px; border: none; background: #f5f5fa; border-radius: 50%; font-size: 10px; cursor: pointer; color: var(--text-dim); touch-action: manipulation; padding: 0; line-height: 1; display: inline-flex; align-items: center; justify-content: center; }
+.streak-reset-mini:active { transform: scale(0.85); }
 </style>
 </head>
 <body>
@@ -182,11 +188,14 @@ body.lying .progress-fill, body.resting .progress-fill { background: linear-grad
 
 <div class="container">
   <div class="header">
-    <div>
-      <div class="day-counter" id="dayCounter">🌿 수술 후 50일째</div>
-      <div class="week-counter" id="weekCounter">8주차 1일</div>
-      <div class="header-date" id="dateText">오늘</div>
-      <div class="version-tag">v4.0</div>
+    <div class="header-info">
+      <div class="day-counter" id="dayCounter">🌿 수술 후 57일째 · 9주차 1일 · 5/13</div>
+      <div class="streak-line">
+        <span class="streak-mini" id="smokeStreak">🚭 금연 --일째</span>
+        <span class="streak-sep">·</span>
+        <span class="streak-mini" id="drinkStreak">🍺 술 안 먹은지 --일째</span>
+        <button class="streak-reset-mini" id="drinkReset" title="금주 다시 시작">↻</button>
+      </div>
     </div>
     <button class="settings-btn" id="settingsBtn">⚙️</button>
   </div>
@@ -358,6 +367,18 @@ body.lying .progress-fill, body.resting .progress-fill { background: linear-grad
           </div>
         </div>
       </div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">🚭 금연 / 금주 시작일</div>
+        <div class="setting-row">
+          <div><div class="setting-label">🚭 금연 시작일</div><div class="setting-sub">날짜 변경 시 카운트 재계산</div></div>
+          <input type="date" id="smokeStartInput" class="date-input">
+        </div>
+        <div class="setting-row">
+          <div><div class="setting-label">🚫🍺 금주 시작일</div><div class="setting-sub">카드 ↻ 버튼으로 오늘부터 다시 시작</div></div>
+          <input type="date" id="drinkStartInput" class="date-input">
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -380,6 +401,10 @@ const LIMITS_KEY = 'recoveryLimits_v2';
 const DAILY_KEY = 'recoveryDaily_v2';
 const SURGERY = new Date('2026-03-18T00:00:00');
 const STORE_KEY = 'recoveryTimer_v4';
+const SMOKE_KEY = 'recoverySmokeStart_v1';
+const DRINK_KEY = 'recoveryDrinkStart_v1';
+// 기본값: 수술일과 동일 (수술 이후로 가정). 사용자가 설정에서 변경 가능.
+const DEFAULT_QUIT = '2026-03-18';
 const HISTORY_KEY = 'recoveryHistory_v4';
 
 const ACTIONS = {
@@ -956,12 +981,46 @@ function formatDateLabel(key) {
 function updateDayCounter() {
   const today = new Date(); today.setHours(0,0,0,0);
   const days = Math.floor((today - SURGERY) / (1000*60*60*24)) + 1;
-  $('dayCounter').textContent = `🌿 수술 후 ${days}일째`;
   const weekNum = Math.floor((days - 1) / 7) + 1;
   const dayInWeek = ((days - 1) % 7) + 1;
-  $('weekCounter').textContent = `${weekNum}주차 ${dayInWeek}일`;
   const now = new Date();
-  $('dateText').textContent = `${now.getMonth()+1}월 ${now.getDate()}일`;
+  $('dayCounter').textContent = `🌿 수술 후 ${days}일째 · ${weekNum}주차 ${dayInWeek}일 · ${now.getMonth()+1}/${now.getDate()}`;
+}
+
+// 금연/금주 상태
+function getQuitStart(key, fallback) {
+  try {
+    const v = localStorage.getItem(key);
+    if (v) return v;
+  } catch(e){}
+  return fallback;
+}
+function setQuitStart(key, dateStr) {
+  try { localStorage.setItem(key, dateStr); } catch(e){}
+}
+function quitDaysFrom(dateStr) {
+  if (!dateStr) return null;
+  const start = new Date(dateStr + 'T00:00:00');
+  if (isNaN(start.getTime())) return null;
+  const today = new Date(); today.setHours(0,0,0,0);
+  return Math.floor((today - start) / (1000*60*60*24)) + 1;
+}
+function renderStreaks() {
+  const smokeStart = getQuitStart(SMOKE_KEY, DEFAULT_QUIT);
+  const drinkStart = getQuitStart(DRINK_KEY, DEFAULT_QUIT);
+  const smokeDays = quitDaysFrom(smokeStart);
+  const drinkDays = quitDaysFrom(drinkStart);
+  $('smokeStreak').innerHTML = smokeDays !== null
+    ? `🚭 금연 <span class="num">${smokeDays}</span>일째`
+    : '🚭 금연 시작일 미설정';
+  $('drinkStreak').innerHTML = drinkDays !== null
+    ? `🍺 술 안 먹은지 <span class="num">${drinkDays}</span>일째`
+    : '🍺 금주 시작일 미설정';
+  // 설정 입력에도 반영
+  const smokeInp = $('smokeStartInput');
+  const drinkInp = $('drinkStartInput');
+  if (smokeInp) smokeInp.value = smokeStart;
+  if (drinkInp) drinkInp.value = drinkStart;
 }
 
 function renderLimitInfo() {
@@ -1098,12 +1157,18 @@ function resync() {
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') {
     resync();
-    requestWakeLock(); // 화면 돌아오면 Wake Lock 재요청
+    requestWakeLock();
+    updateDayCounter();
+    renderStreaks();
   } else {
     saveState();
   }
 });
-window.addEventListener('focus', resync);
+window.addEventListener('focus', () => {
+  resync();
+  updateDayCounter();
+  renderStreaks();
+});
 window.addEventListener('pageshow', (e) => {
   // bfcache에서 복원된 경우에도 무조건 resync
   if (S.current) resync();
@@ -1174,6 +1239,31 @@ $('historyList').addEventListener('click', (e) => {
   if (day && day.dataset.key) showDetail(day.dataset.key);
 });
 
+// 금주 다시 시작 (오늘부터)
+$('drinkReset').addEventListener('click', (e) => {
+  e.stopPropagation();
+  if (!confirm('금주 카운트를 오늘부터 다시 시작할까요?')) return;
+  const t = new Date();
+  const today = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
+  setQuitStart(DRINK_KEY, today);
+  renderStreaks();
+  showToast('🚫🍺 금주 다시 시작');
+});
+
+// 시작일 직접 변경 (설정 모달)
+$('smokeStartInput').addEventListener('change', (e) => {
+  if (e.target.value) {
+    setQuitStart(SMOKE_KEY, e.target.value);
+    renderStreaks();
+  }
+});
+$('drinkStartInput').addEventListener('change', (e) => {
+  if (e.target.value) {
+    setQuitStart(DRINK_KEY, e.target.value);
+    renderStreaks();
+  }
+});
+
 // 초기화
 updateDayCounter();
 loadLimits();
@@ -1182,6 +1272,7 @@ loadState();
 renderToday();
 renderHistory();
 renderLimitInfo();
+renderStreaks();
 
 // 알림 권한 안내 (denied 또는 default 상태일 때)
 if ('Notification' in window) {
