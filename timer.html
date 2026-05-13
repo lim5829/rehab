@@ -179,7 +179,7 @@ body.resting .progress-fill { background: linear-gradient(90deg, var(--rest-c2),
       <div class="day-counter" id="dayCounter">🌿 수술 후 50일째</div>
       <div class="week-counter" id="weekCounter">8주차 1일</div>
       <div class="header-date" id="dateText">오늘</div>
-      <div class="version-tag">v2.0</div>
+      <div class="version-tag">v3.0</div>
     </div>
     <button class="settings-btn" id="settingsBtn">⚙️</button>
   </div>
@@ -192,7 +192,7 @@ body.resting .progress-fill { background: linear-gradient(90deg, var(--rest-c2),
     <div class="timer-sub" id="timerSub">활동을 선택해주세요</div>
     <div class="timer-cumulative" id="timerCumulative"></div>
     <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
-    <div class="limit-info" id="limitInfoText">서기·걷기 합계 20분 · 앉기 30분 · 휴식 60분(회당)</div>
+    <div class="limit-info" id="limitInfoText">서기·걷기 20분 · 앉기 30분 · 휴식 60분 (회당)</div>
   </div>
 
   <div class="action-grid">
@@ -252,7 +252,7 @@ body.resting .progress-fill { background: linear-gradient(90deg, var(--rest-c2),
     </div>
     <div class="modal-body">
       <div class="setting-row">
-        <div><div class="setting-label">🧍🚶 서기+걷기 (하루 누적)</div><div class="setting-sub">하루 동안 합쳐서 권장 시간</div></div>
+        <div><div class="setting-label">🧍🚶 서기·걷기 (회당)</div><div class="setting-sub">한 번에 권장 시간 — 알림</div></div>
         <div class="stepper">
           <button class="step-btn" data-key="active" data-d="-5">−</button>
           <div class="step-val" id="limitActive">20</div>
@@ -260,7 +260,7 @@ body.resting .progress-fill { background: linear-gradient(90deg, var(--rest-c2),
         </div>
       </div>
       <div class="setting-row">
-        <div><div class="setting-label">🪑 앉기 (하루 누적)</div><div class="setting-sub">하루 동안 권장 시간</div></div>
+        <div><div class="setting-label">🪑 앉기 (회당)</div><div class="setting-sub">한 번에 권장 시간 — 알림</div></div>
         <div class="stepper">
           <button class="step-btn" data-key="sit" data-d="-5">−</button>
           <div class="step-val" id="limitSit">30</div>
@@ -268,7 +268,7 @@ body.resting .progress-fill { background: linear-gradient(90deg, var(--rest-c2),
         </div>
       </div>
       <div class="setting-row">
-        <div><div class="setting-label">🛌 휴식 (회당)</div><div class="setting-sub">한 번에 충분히 쉬는 시간</div></div>
+        <div><div class="setting-label">🛌 휴식 (회당)</div><div class="setting-sub">한 번에 충분히 쉬는 시간 — 알림</div></div>
         <div class="stepper">
           <button class="step-btn" data-key="rest" data-d="-10">−</button>
           <div class="step-val" id="limitRest">60</div>
@@ -300,13 +300,13 @@ const STORE_KEY = 'recoveryTimer_v3';
 const HISTORY_KEY = 'recoveryHistory_v3';
 
 const ACTIONS = {
-  stand: { emoji:'🧍', name:'서기', cls:'standing', btnCls:'active-stand', group:'active', limitType:'cumulative' },
-  walk:  { emoji:'🚶', name:'걷기', cls:'walking',  btnCls:'active-walk',  group:'active', limitType:'cumulative' },
-  sit:   { emoji:'🪑', name:'앉기', cls:'sitting',  btnCls:'active-sit',   group:'sit',    limitType:'cumulative' },
-  rest:  { emoji:'🛌', name:'휴식', cls:'resting',  btnCls:'active-rest',  group:'rest',   limitType:'session' },
+  stand: { emoji:'🧍', name:'서기', cls:'standing', btnCls:'active-stand', group:'active', limitType:'session', limitKey:'active' },
+  walk:  { emoji:'🚶', name:'걷기', cls:'walking',  btnCls:'active-walk',  group:'active', limitType:'session', limitKey:'active' },
+  sit:   { emoji:'🪑', name:'앉기', cls:'sitting',  btnCls:'active-sit',   group:'sit',    limitType:'session', limitKey:'sit' },
+  rest:  { emoji:'🛌', name:'휴식', cls:'resting',  btnCls:'active-rest',  group:'rest',   limitType:'session', limitKey:'rest' },
 };
 
-let S = { current: null, startTime: null, alertedGroup: null, timer: null };
+let S = { current: null, startTime: null, alerted: false, timer: null };
 let history = {};
 
 const $ = id => document.getElementById(id);
@@ -362,6 +362,106 @@ function playAlert() {
 }
 function vib(p) { if (navigator.vibrate) navigator.vibrate(p); }
 
+// ============================================================
+// 백그라운드/포그라운드 알림 시스템
+// 전략 1: Notification API + setTimeout (포그라운드 + 가벼운 백그라운드)
+// 전략 2: Wake Lock으로 화면 켜진 동안 페이지 유지
+// 전략 3: 복귀 시 만료 감지 → 즉시 강력 알림 (visibilitychange/focus)
+// ============================================================
+let _notifTimer = null;
+let _wakeLock = null;
+
+async function requestWakeLock() {
+  try {
+    if ('wakeLock' in navigator && document.visibilityState === 'visible') {
+      _wakeLock = await navigator.wakeLock.request('screen');
+      _wakeLock.addEventListener('release', () => { _wakeLock = null; });
+    }
+  } catch(e) { /* 사용자가 화면 끄면 자동 해제됨 */ }
+}
+function releaseWakeLock() {
+  try { if (_wakeLock) { _wakeLock.release(); _wakeLock = null; } } catch(e){}
+}
+
+async function ensureNotifPermission() {
+  if (!('Notification' in window)) return false;
+  if (Notification.permission === 'granted') return true;
+  if (Notification.permission === 'denied') return false;
+  try {
+    const p = await Notification.requestPermission();
+    return p === 'granted';
+  } catch(e) { return false; }
+}
+
+function scheduleNotification() {
+  cancelNotification();
+  if (!S.current || !S.startTime) return;
+  const def = ACTIONS[S.current];
+  const limitMs = LIMITS_MIN[def.limitKey] * 60 * 1000;
+  const fireAt = S.startTime + limitMs;
+  const delay = fireAt - Date.now();
+  // 이미 지났거나 너무 가까운 경우: 즉시 처리는 updateTick이 함
+  if (delay <= 0) return;
+  // setTimeout은 포그라운드/얕은 백그라운드에서만 신뢰 가능
+  _notifTimer = setTimeout(() => {
+    _notifTimer = null;
+    if (!S.current) return;
+    // 화면 보이면 updateTick이 알아서 처리 (중복 방지)
+    if (document.visibilityState === 'visible' && S.alerted) return;
+    if (!S.alerted) {
+      S.alerted = true;
+      saveState();
+    }
+    fireNotification(S.current);
+    playAlert();
+    vib([400, 150, 400, 150, 600]);
+  }, delay);
+  // 화면이 켜져 있으면 Wake Lock 시도 (가능한 한 페이지 살아있게)
+  requestWakeLock();
+}
+
+function cancelNotification() {
+  if (_notifTimer) { clearTimeout(_notifTimer); _notifTimer = null; }
+  releaseWakeLock();}
+
+function fireNotification(action) {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  const def = ACTIONS[action];
+  const mins = LIMITS_MIN[def.limitKey];
+  const title = `${def.emoji} ${def.name} ${mins}분 완료`;
+  let body;
+  if (action === 'stand' || action === 'walk') body = '이제 앉거나 누워서 쉬세요';
+  else if (action === 'sit') body = '이제 누워서 충분히 쉬세요';
+  else body = '충분히 쉬셨어요. 천천히 활동을 시작해도 좋아요';
+  try {
+    const n = new Notification(title, {
+      body,
+      tag: 'recovery-timer-' + action,
+      requireInteraction: true,
+      vibrate: [400, 150, 400, 150, 600],
+      silent: false,
+    });
+    n.onclick = () => { window.focus(); n.close(); };
+  } catch(e){}
+}
+
+// 복귀 시 만료 감지: 백그라운드에서 시간이 지났는데 알림이 안 떴으면 즉시 처리
+function checkExpiryOnReturn() {
+  if (!S.current || !S.startTime) return;
+  if (S.alerted) return;
+  const def = ACTIONS[S.current];
+  const limit = LIMITS_MIN[def.limitKey] * 60;
+  const elapsed = Math.round((Date.now() - S.startTime) / 1000);
+  if (elapsed >= limit) {
+    S.alerted = true;
+    saveState();
+    showAlert(S.current);
+    playAlert();
+    vib([400, 150, 400, 150, 600]);
+    fireNotification(S.current);
+  }
+}
+
 function getCumulativeForGroup(group) {
   const today = history[todayKey()] || {};
   let total = 0;
@@ -384,17 +484,13 @@ function getSessionElapsed() {
 function startActivity(action) {
   // 같은 활동이 이미 진행 중이면 무시 (실수 탭 방지)
   if (S.current === action) return;
+  // 알림 권한 요청 (첫 사용 시) — 사용자 제스처 필수
+  ensureNotifPermission();
   if (S.current) stopActivity(false);
   S.current = action;
   S.startTime = Date.now();
+  S.alerted = false; // 세션 기반: 이번 세션에서 알림 이미 울렸는지
   const def = ACTIONS[action];
-  const group = def.group;
-  if (def.limitType === 'session') {
-    S.alertedGroup = null;
-  } else {
-    const cumulative = getCumulativeForGroup(group);
-    S.alertedGroup = (cumulative >= L(group)) ? group : null;
-  }
   // 즉시 저장 (백그라운드 종료 대비 - 시작하자마자 박아넣기)
   saveState();
   document.body.className = def.cls;
@@ -409,6 +505,7 @@ function startActivity(action) {
   saveState();
   startTick();
   showToast(`${def.emoji} ${def.name} 시작`);
+  scheduleNotification(); // OS 알림 예약 + Wake Lock
 }
 
 function stopActivity(showMsg) {
@@ -420,8 +517,9 @@ function stopActivity(showMsg) {
   if (elapsed >= 5) saveToHistory(action, elapsed, startTs);
   S.current = null;
   S.startTime = null;
-  S.alertedGroup = null;
+  S.alerted = false;
   clearInterval(S.timer);
+  cancelNotification(); // 예약 알림/Wake Lock 해제
   try { localStorage.removeItem(STORE_KEY); } catch(e){}
   document.body.className = '';
   $('statusEmoji').textContent = '⏸';
@@ -456,59 +554,55 @@ function updateTick() {
   saveState();
   const elapsed = getSessionElapsed();
   const def = ACTIONS[S.current];
-  const group = def.group;
-  const limit = L(group);
+  const limit = LIMITS_MIN[def.limitKey] * 60;
   $('timerDisplay').textContent = formatTime(elapsed);
   $('timerSub').textContent = `이번 세션 ${formatTime(elapsed)}`;
-  let measured, label, isOver;
-  if (def.limitType === 'session') {
-    measured = elapsed;
-    label = '이번 휴식';
-    isOver = elapsed >= limit;
+  const isOver = elapsed >= limit;
+  if (def.limitKey === 'rest') {
     $('timerCumulative').textContent = isOver
-      ? `${label} ${formatMin(elapsed)} / ${limit/60}분 ✓ 충분히 쉬셨어요`
-      : `${label} ${formatMin(elapsed)} / ${limit/60}분`;
+      ? `${formatMin(elapsed)} / ${limit/60}분 ✓ 충분히 쉬셨어요`
+      : `${formatMin(elapsed)} / ${limit/60}분`;
   } else {
-    measured = getCumulativeForGroup(group);
-    label = group === 'active' ? '오늘 서기+걷기 누적' : '오늘 앉기 누적';
-    isOver = measured >= limit;
     $('timerCumulative').textContent = isOver
-      ? `${label} ${formatMin(measured)} ⚠ ${formatMin(measured - limit)} 초과`
-      : `${label} ${formatMin(measured)} / ${limit/60}분`;
+      ? `${formatMin(elapsed)} / ${limit/60}분 ⚠ ${formatMin(elapsed - limit)} 초과`
+      : `${formatMin(elapsed)} / ${limit/60}분`;
   }
   if (!isOver) {
     $('timerCumulative').className = 'timer-cumulative';
-    $('progressFill').style.width = Math.min(100, (measured/limit)*100) + '%';
+    $('progressFill').style.width = Math.min(100, (elapsed/limit)*100) + '%';
     $('progressFill').classList.remove('over');
   } else {
-    $('timerCumulative').className = def.limitType === 'session'
+    // 휴식이 아닐 때만 빨간색 초과 표시
+    $('timerCumulative').className = (def.limitKey === 'rest')
       ? 'timer-cumulative' : 'timer-cumulative over';
     $('progressFill').style.width = '100%';
-    if (def.limitType !== 'session') $('progressFill').classList.add('over');
-    if (S.alertedGroup !== group) {
-      S.alertedGroup = group;
-      showAlert(group);
+    if (def.limitKey !== 'rest') $('progressFill').classList.add('over');
+    if (!S.alerted) {
+      S.alerted = true;
+      saveState();
+      showAlert(S.current);
       playAlert();
       vib([300, 100, 300, 100, 500]);
+      fireNotification(S.current); // 포그라운드여도 OS 알림 한 번
     }
   }
 }
 
-function showAlert(group) {
+function showAlert(action) {
   const banner = $('alertBanner');
-  if (group === 'active') {
-    $('alertEmoji').textContent = '🧍';
-    $('alertTitle').textContent = `오늘 서기+걷기 ${LIMITS_MIN.active}분 도달`;
+  const def = ACTIONS[action];
+  const mins = LIMITS_MIN[def.limitKey];
+  $('alertEmoji').textContent = def.emoji;
+  if (action === 'stand' || action === 'walk') {
+    $('alertTitle').textContent = `${def.name} ${mins}분 완료`;
     $('alertSub').textContent = '이제 앉거나 누워서 쉬는 게 좋아요';
-    banner.className = 'alert show stand';
-  } else if (group === 'sit') {
-    $('alertEmoji').textContent = '🪑';
-    $('alertTitle').textContent = `오늘 앉기 ${LIMITS_MIN.sit}분 도달`;
+    banner.className = 'alert show ' + (action === 'stand' ? 'stand' : 'walk');
+  } else if (action === 'sit') {
+    $('alertTitle').textContent = `앉기 ${mins}분 완료`;
     $('alertSub').textContent = '이제 누워서 충분히 쉬세요';
     banner.className = 'alert show sit';
   } else {
-    $('alertEmoji').textContent = '🛌';
-    $('alertTitle').textContent = `${LIMITS_MIN.rest}분 휴식 완료`;
+    $('alertTitle').textContent = `휴식 ${mins}분 완료`;
     $('alertSub').textContent = '충분히 쉬셨어요. 천천히 활동 시작해도 좋아요';
     banner.className = 'alert show rest';
   }
@@ -529,7 +623,7 @@ function saveState() {
       localStorage.setItem(STORE_KEY, JSON.stringify({
         current: S.current,
         startTime: S.startTime,
-        alertedGroup: S.alertedGroup,
+        alerted: S.alerted,
         lastSaved: Date.now(),
       }));
     }
@@ -551,7 +645,7 @@ function loadState() {
       const def = ACTIONS[v.current];
       S.current = v.current;
       S.startTime = v.startTime;
-      S.alertedGroup = v.alertedGroup || null;
+      S.alerted = v.alerted || false;
       document.body.className = def.cls;
       $('statusEmoji').textContent = def.emoji;
       $('statusName').textContent = def.name + ' 중';
@@ -559,6 +653,7 @@ function loadState() {
       const btn = $(`btn${v.current.charAt(0).toUpperCase()+v.current.slice(1)}`);
       if (btn) btn.classList.add(def.btnCls);
       startTick();
+      scheduleNotification(); // 복귀 시 다시 알림 예약
       // 복원 알림 (백그라운드 종료 후 복귀 시)
       const sinceLastSave = v.lastSaved ? Math.round((Date.now() - v.lastSaved) / 1000) : 0;
       if (sinceLastSave > 60) {
@@ -668,7 +763,7 @@ function updateDayCounter() {
 
 function renderLimitInfo() {
   $('limitInfoText').textContent =
-    `서기·걷기 합계 ${LIMITS_MIN.active}분 · 앉기 ${LIMITS_MIN.sit}분 · 휴식 ${LIMITS_MIN.rest}분(회당)`;
+    `서기·걷기 ${LIMITS_MIN.active}분 · 앉기 ${LIMITS_MIN.sit}분 · 휴식 ${LIMITS_MIN.rest}분 (회당)`;
   $('limitActive').textContent = LIMITS_MIN.active;
   $('limitSit').textContent = LIMITS_MIN.sit;
   $('limitRest').textContent = LIMITS_MIN.rest;
@@ -682,7 +777,18 @@ function changeLimit(key, delta) {
   LIMITS_MIN[key] = newVal;
   saveLimits();
   renderLimitInfo();
-  if (S.current) updateTick();
+  if (S.current) {
+    // 진행 중인 활동의 설정이 바뀌면 알림 재예약
+    const def = ACTIONS[S.current];
+    if (def.limitKey === key) {
+      const elapsed = getSessionElapsed();
+      const newLimit = newVal * 60;
+      // 새 설정 기준 아직 안 넘었으면 alerted 리셋
+      if (elapsed < newLimit) S.alerted = false;
+      scheduleNotification();
+    }
+    updateTick();
+  }
 }
 
 function formatHHMM(ts) {
@@ -756,13 +862,16 @@ function showDetail(dateKey) {
 function resync() {
   if (S.current) {
     clearInterval(S.timer);
+    checkExpiryOnReturn(); // 백그라운드에서 만료됐는지 즉시 확인
     updateTick();
     S.timer = setInterval(updateTick, 1000);
+    scheduleNotification(); // 재예약 (visible 동안 setTimeout이 더 정확)
   }
 }
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') {
     resync();
+    requestWakeLock(); // 화면 돌아오면 Wake Lock 재요청
   } else {
     saveState();
   }
@@ -839,6 +948,15 @@ loadState();
 renderToday();
 renderHistory();
 renderLimitInfo();
+
+// 알림 권한 안내 (denied 또는 default 상태일 때)
+if ('Notification' in window) {
+  if (Notification.permission === 'default') {
+    setTimeout(() => showToast('🔔 활동 시작 시 알림 권한을 허용해주세요'), 600);
+  } else if (Notification.permission === 'denied') {
+    setTimeout(() => showToast('⚠️ 알림 차단됨 — 브라우저 설정에서 허용하세요'), 600);
+  }
+}
 
 // URL 파라미터 처리 (단축어/Tasker/NFC 연동용)
 // 사용 예: timer.html?action=walk, timer.html?action=stand, timer.html?stop
