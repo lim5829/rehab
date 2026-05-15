@@ -642,18 +642,32 @@ function getSessionElapsed() {
   return Math.round((Date.now() - S.startTime) / 1000);
 }
 
-function startActivity(action) {
+function startActivity(action, skipChainReset) {
   // 같은 활동이 이미 진행 중이면 무시 (실수 탭 방지)
   if (S.current === action) return;
   // 알림 권한 요청 (첫 사용 시) — 사용자 제스처 필수
   ensureNotifPermission();
-  if (S.current) stopActivity(false);
+  if (S.current) stopActivity(false, false); // 다른 활동 정리 시 자동 누워있기 체인 방지
+  // 누워있기가 아닌 활동을 새로 시작하면 lie 권장 기본값 복구
+  // (체인으로 시작된 누워있기는 동적 값 유지, skipChainReset=true)
+  if (action !== 'lie' && !skipChainReset) {
+    LIMITS_MIN.lie.rec = DEFAULT_LIMITS.lie.rec;
+    LIMITS_MIN.lie.max = DEFAULT_LIMITS.lie.max;
+    // 사용자가 수동 변경한 값이 있으면 그걸 복구
+    try {
+      const raw = localStorage.getItem(LIMITS_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed.lie) LIMITS_MIN.lie = { ...LIMITS_MIN.lie, ...parsed.lie };
+      }
+    } catch(e){}
+    renderLimitInfo();
+  }
   S.current = action;
   S.startTime = Date.now();
   S.alertedRec = false;
   S.alertedMax = false;
   const def = ACTIONS[action];
-  // 즉시 저장 (백그라운드 종료 대비 - 시작하자마자 박아넣기)
   saveState();
   document.body.className = def.cls;
   $('statusEmoji').textContent = def.emoji;
@@ -666,17 +680,19 @@ function startActivity(action) {
   if (btn) btn.classList.add(def.btnCls);
   saveState();
   startTick();
-  showToast(`${def.emoji} ${def.name} 시작`);
-  scheduleNotification(); // OS 알림 예약 + Wake Lock
+  if (!skipChainReset) showToast(`${def.emoji} ${def.name} 시작`);
+  scheduleNotification();
 }
 
-function stopActivity(showMsg) {
+function stopActivity(showMsg, autoChain) {
   if (showMsg === undefined) showMsg = true;
+  if (autoChain === undefined) autoChain = true;
   if (!S.current) return;
   const elapsed = Math.round((Date.now() - S.startTime) / 1000);
   const startTs = S.startTime;
   const action = S.current;
   if (elapsed >= 5) saveToHistory(action, elapsed, startTs);
+  const wasNonLie = (action !== 'lie');
   S.current = null;
   S.startTime = null;
   S.alertedRec = false;
@@ -702,6 +718,19 @@ function stopActivity(showMsg) {
   renderHistory();
   if (showMsg && elapsed >= 5) {
     showToast(`${ACTIONS[action].emoji} ${ACTIONS[action].name} ${formatMin(elapsed)} 기록`);
+  }
+  // 비누워있기 활동을 사용자가 정지한 경우 → 권장 누워있기 자동 시작
+  if (autoChain && wasNonLie && elapsed >= 5) {
+    const load = calculateAccumulatedLoad();
+    const recMin = recommendedLieMinutes(load);
+    // 누워있기 권장 시간을 동적으로 설정 (이번 한 번만)
+    setTimeout(() => {
+      LIMITS_MIN.lie.rec = recMin;
+      LIMITS_MIN.lie.max = Math.max(recMin + 30, 120);
+      renderLimitInfo();
+      startActivity('lie', true); // skipChainReset=true
+      showToast(`🛌 누워있기 ${recMin}분 권장 (누적 부하 ${Math.round(load)})`);
+    }, 800);
   }
 }
 
@@ -900,6 +929,43 @@ function saveToHistory(action, seconds, startTs) {
     end: startTs + seconds * 1000,
   });
   try { localStorage.setItem(HISTORY_KEY, JSON.stringify(history)); } catch(e){}
+}
+
+// 부하 계산: 직전 누워있기 이후의 stand/sit/walk 모두 누적
+// 부하 지수: stand=100, sit=110(등받이 가정), walk=130(동적 부하)
+const LOAD_FACTOR = { stand: 100, sit: 110, walk: 130 };
+
+function calculateAccumulatedLoad() {
+  const key = todayKey();
+  const today = history[key];
+  if (!today) return 0;
+  const allSessions = [];
+  ['lie','stand','sit','walk'].forEach(action => {
+    (today[action] || []).forEach(rec => {
+      const sec = (typeof rec === 'object') ? rec.sec : rec;
+      const start = (typeof rec === 'object' && rec.start) ? rec.start : 0;
+      allSessions.push({ action, sec, start });
+    });
+  });
+  allSessions.sort((a, b) => a.start - b.start);
+  let lastLieIdx = -1;
+  for (let i = allSessions.length - 1; i >= 0; i--) {
+    if (allSessions[i].action === 'lie') { lastLieIdx = i; break; }
+  }
+  let totalLoad = 0;
+  for (let i = lastLieIdx + 1; i < allSessions.length; i++) {
+    const s = allSessions[i];
+    if (s.action === 'lie') continue;
+    totalLoad += (s.sec / 60) * (LOAD_FACTOR[s.action] || 100);
+  }
+  return totalLoad;
+}
+
+function recommendedLieMinutes(load) {
+  // 기준: stand 10 + sit 20 정상 사이클 = 3200 단위 → 60분
+  if (load <= 0) return 30;
+  const minutes = Math.round((load / 3200) * 60);
+  return Math.max(20, Math.min(90, minutes));
 }
 
 function renderToday() {
