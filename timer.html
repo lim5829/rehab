@@ -878,11 +878,8 @@ function loadState() {
       if (btn) btn.classList.add(def.btnCls);
       startTick();
       scheduleNotification(); // 복귀 시 다시 알림 예약
-      // 복원 알림 (백그라운드 종료 후 복귀 시)
-      const sinceLastSave = v.lastSaved ? Math.round((Date.now() - v.lastSaved) / 1000) : 0;
-      if (sinceLastSave > 60) {
-        showToast(`${def.emoji} ${def.name} 복원됨 (${formatTime(elapsed)} 진행 중)`);
-      }
+      // 복원 알림 (의도치 않은 상태 즉시 인지를 위해 항상 표시)
+      showToast(`${def.emoji} ${def.name} 복원됨 (${formatTime(elapsed)} 진행 중)`);
     }
   } catch(e){}
 }
