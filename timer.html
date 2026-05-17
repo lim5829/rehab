@@ -719,16 +719,15 @@ function stopActivity(showMsg, autoChain) {
   if (showMsg && elapsed >= 5) {
     showToast(`${ACTIONS[action].emoji} ${ACTIONS[action].name} ${formatMin(elapsed)} 기록`);
   }
-  // 비누워있기 활동을 사용자가 정지한 경우 → 권장 누워있기 자동 시작
+  // 비누워있기 활동을 사용자가 정지한 경우 → 권장 누워있기 시간 안내만 (자동 시작 X)
   if (autoChain && wasNonLie && elapsed >= 5) {
     const load = calculateAccumulatedLoad();
     const recMin = recommendedLieMinutes(load);
-    // 누워있기 권장 시간을 동적으로 설정 (이번 한 번만)
+    // 다음 누워있기를 위해 권장값만 갱신 (사용자가 직접 눌러야 시작됨)
+    LIMITS_MIN.lie.rec = recMin;
+    LIMITS_MIN.lie.max = Math.max(recMin + 30, 120);
+    renderLimitInfo();
     setTimeout(() => {
-      LIMITS_MIN.lie.rec = recMin;
-      LIMITS_MIN.lie.max = Math.max(recMin + 30, 120);
-      renderLimitInfo();
-      startActivity('lie', true); // skipChainReset=true
       showToast(`🛌 누워있기 ${recMin}분 권장 (누적 부하 ${Math.round(load)})`);
     }, 800);
   }
