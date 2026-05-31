@@ -10,10 +10,9 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800&family=Nunito:wght@400;700;800&display=swap');
 :root {
-  --stand-c: #ff6b9d; --stand-c2: #ff9a56; --stand-bg: #fff5f0;
-  --walk-c: #00b894; --walk-c2: #55efc4; --walk-bg: #f0fff4;
-  --sit-c: #f0932b; --sit-c2: #f9ca24; --sit-bg: #fffbf0;
+  --act-c: #f0932b; --act-c2: #f9ca24; --act-bg: #fffbf0;
   --rest-c: #5b7fff; --rest-c2: #56cfff; --rest-bg: #f0f5ff;
+  --ex-c: #00b894; --ex-c2: #55efc4; --ex-bg: #f0fff4;
   --bg: #fafafa; --text: #2d2d3a; --text-dim: #9b9baf;
   --border: #ededf5; --shadow: rgba(120,120,180,0.1);
   --radius: 24px; --radius-sm: 14px;
@@ -25,10 +24,9 @@ body {
   min-height: 100vh; padding: 18px 16px 60px;
   transition: background 0.6s ease; overflow-x: hidden;
 }
-body.standing { background: var(--stand-bg); }
-body.walking { background: var(--walk-bg); }
-body.sitting { background: var(--sit-bg); }
-body.lying, body.resting { background: var(--rest-bg); }
+body.activity { background: var(--act-bg); }
+body.resting { background: var(--rest-bg); }
+body.exercise { background: var(--ex-bg); }
 .blob { position: fixed; border-radius: 50%; filter: blur(70px); opacity: 0.3; pointer-events: none; z-index: 0; }
 .blob-1 { width: 280px; height: 280px; top: -80px; right: -60px; background: radial-gradient(circle, #ffb3c6, #ffd6a5); }
 .blob-2 { width: 220px; height: 220px; bottom: -40px; left: -40px; background: radial-gradient(circle, #a0d8ef, #c3b1e1); }
@@ -40,43 +38,38 @@ body.lying, body.resting { background: var(--rest-bg); }
 .settings-btn:active { transform: scale(0.9); }
 .status-card { background: white; border-radius: var(--radius); padding: 28px 20px; box-shadow: 0 4px 20px var(--shadow); text-align: center; position: relative; overflow: hidden; }
 .status-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: #ddd; transition: background 0.5s; }
-body.standing .status-card::before { background: linear-gradient(90deg, var(--stand-c2), var(--stand-c)); }
-body.walking .status-card::before { background: linear-gradient(90deg, var(--walk-c2), var(--walk-c)); }
-body.sitting .status-card::before { background: linear-gradient(90deg, var(--sit-c2), var(--sit-c)); }
-body.lying .status-card::before, body.resting .status-card::before { background: linear-gradient(90deg, var(--rest-c2), var(--rest-c)); }
+body.activity .status-card::before { background: linear-gradient(90deg, var(--act-c2), var(--act-c)); }
+body.resting .status-card::before { background: linear-gradient(90deg, var(--rest-c2), var(--rest-c)); }
+body.exercise .status-card::before { background: linear-gradient(90deg, var(--ex-c2), var(--ex-c)); }
 .status-emoji { font-size: 44px; margin-bottom: 8px; line-height: 1; }
 .status-label { font-size: 13px; color: var(--text-dim); font-weight: 600; letter-spacing: 1px; margin-bottom: 4px; }
 .status-name { font-size: 22px; font-weight: 700; margin-bottom: 16px; }
-body.standing .status-name { color: var(--stand-c); }
-body.walking .status-name { color: var(--walk-c); }
-body.sitting .status-name { color: var(--sit-c); }
+body.activity .status-name { color: var(--act-c); }
 body.resting .status-name { color: var(--rest-c); }
+body.exercise .status-name { color: var(--ex-c); }
 .timer-display { font-family: 'Nunito', sans-serif; font-size: 56px; font-weight: 800; letter-spacing: -2px; line-height: 1; margin-bottom: 6px; }
-body.standing .timer-display { color: var(--stand-c); }
-body.walking .timer-display { color: var(--walk-c); }
-body.sitting .timer-display { color: var(--sit-c); }
+body.activity .timer-display { color: var(--act-c); }
 body.resting .timer-display { color: var(--rest-c); }
+body.exercise .timer-display { color: var(--ex-c); }
 .timer-sub { font-size: 13px; color: var(--text-dim); margin-bottom: 4px; }
 .timer-cumulative { font-size: 12px; color: var(--text-dim); margin-bottom: 14px; font-weight: 500; }
 .timer-cumulative.warn { color: #f0932b; font-weight: 700; }
 .timer-cumulative.over { color: #e53e3e; font-weight: 700; }
 .progress-bar { width: 100%; height: 6px; background: var(--border); border-radius: 100px; overflow: hidden; margin-bottom: 16px; }
 .progress-fill { height: 100%; border-radius: 100px; transition: width 1s linear, background 0.5s; background: #ddd; }
-body.standing .progress-fill { background: linear-gradient(90deg, var(--stand-c2), var(--stand-c)); }
-body.walking .progress-fill { background: linear-gradient(90deg, var(--walk-c2), var(--walk-c)); }
-body.sitting .progress-fill { background: linear-gradient(90deg, var(--sit-c2), var(--sit-c)); }
-body.lying .progress-fill, body.resting .progress-fill { background: linear-gradient(90deg, var(--rest-c2), var(--rest-c)); }
+body.activity .progress-fill { background: linear-gradient(90deg, var(--act-c2), var(--act-c)); }
+body.resting .progress-fill { background: linear-gradient(90deg, var(--rest-c2), var(--rest-c)); }
+body.exercise .progress-fill { background: linear-gradient(90deg, var(--ex-c2), var(--ex-c)); }
 .progress-fill.warn { background: linear-gradient(90deg, #f9ca24, #f0932b) !important; }
 .progress-fill.over { background: linear-gradient(90deg, #ff6b6b, #e53e3e) !important; }
-.action-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; }
-.action-btn { padding: 14px 4px; border-radius: var(--radius-sm); border: 2px solid var(--border); background: white; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; font-family: 'Noto Sans KR', sans-serif; font-weight: 700; color: var(--text-dim); transition: all 0.2s; touch-action: manipulation; }
+.action-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+.action-btn { padding: 18px 6px; border-radius: var(--radius-sm); border: 2px solid var(--border); background: white; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px; font-family: 'Noto Sans KR', sans-serif; font-weight: 700; color: var(--text-dim); transition: all 0.2s; touch-action: manipulation; }
 .action-btn:active { transform: scale(0.96); }
-.action-btn.active-stand { background: linear-gradient(135deg, var(--stand-c2), var(--stand-c)); color: white; border-color: transparent; box-shadow: 0 4px 16px rgba(255,107,157,0.35); }
-.action-btn.active-walk { background: linear-gradient(135deg, var(--walk-c2), var(--walk-c)); color: white; border-color: transparent; box-shadow: 0 4px 16px rgba(0,184,148,0.35); }
-.action-btn.active-sit { background: linear-gradient(135deg, var(--sit-c2), var(--sit-c)); color: white; border-color: transparent; box-shadow: 0 4px 16px rgba(240,147,43,0.35); }
-.action-btn.active-rest, .action-btn.active-lie { background: linear-gradient(135deg, var(--rest-c2), var(--rest-c)); color: white; border-color: transparent; box-shadow: 0 4px 16px rgba(91,127,255,0.35); }
-.action-emoji { font-size: 22px; line-height: 1; }
-.action-name { font-size: 12px; }
+.action-btn.active-act { background: linear-gradient(135deg, var(--act-c2), var(--act-c)); color: white; border-color: transparent; box-shadow: 0 4px 16px rgba(240,147,43,0.35); }
+.action-btn.active-rest { background: linear-gradient(135deg, var(--rest-c2), var(--rest-c)); color: white; border-color: transparent; box-shadow: 0 4px 16px rgba(91,127,255,0.35); }
+.action-btn.active-ex { background: linear-gradient(135deg, var(--ex-c2), var(--ex-c)); color: white; border-color: transparent; box-shadow: 0 4px 16px rgba(0,184,148,0.35); }
+.action-emoji { font-size: 26px; line-height: 1; }
+.action-name { font-size: 13px; }
 .stop-btn { width: 100%; padding: 14px; border-radius: var(--radius-sm); border: 1.5px solid var(--border); background: white; color: var(--text-dim); font-family: 'Noto Sans KR', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; touch-action: manipulation; transition: all 0.2s; }
 .stop-btn:active { transform: scale(0.98); background: #f5f5fa; }
 .stop-btn:disabled { opacity: 0.4; }
@@ -87,17 +80,15 @@ body.lying .progress-fill, body.resting .progress-fill { background: linear-grad
 .today-row:last-child { border-bottom: none; }
 .today-row-left { display: flex; align-items: center; gap: 12px; }
 .today-row-emoji { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
-.row-stand { background: linear-gradient(135deg, #ffe5ec, #ffe9c8); }
-.row-walk { background: linear-gradient(135deg, #d4f5e9, #c8f0e0); }
-.row-sit { background: linear-gradient(135deg, #fff8e1, #ffe0b2); }
+.row-act { background: linear-gradient(135deg, #fff8e1, #ffe0b2); }
 .row-rest { background: linear-gradient(135deg, #e3f2fd, #e8eaff); }
+.row-ex { background: linear-gradient(135deg, #d4f5e9, #c8f0e0); }
 .today-row-name { font-size: 14px; font-weight: 600; }
 .today-row-detail { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
 .today-row-time { font-family: 'Nunito', sans-serif; font-size: 18px; font-weight: 800; }
-.t-stand { color: var(--stand-c); }
-.t-walk { color: var(--walk-c); }
-.t-sit { color: var(--sit-c); }
+.t-act { color: var(--act-c); }
 .t-rest { color: var(--rest-c); }
+.t-ex { color: var(--ex-c); }
 .history-list { display: flex; flex-direction: column; gap: 10px; max-height: 320px; overflow-y: auto; }
 .history-empty { text-align: center; color: var(--text-dim); font-size: 13px; padding: 20px 0; }
 .history-day { background: #f9f9fc; border-radius: 12px; padding: 12px 14px; }
@@ -105,17 +96,15 @@ body.lying .progress-fill, body.resting .progress-fill { background: linear-grad
 .history-day-date { font-size: 13px; font-weight: 700; }
 .history-day-cycles { font-size: 11px; color: var(--text-dim); }
 .history-day-bars { display: flex; height: 8px; border-radius: 100px; overflow: hidden; background: #ededf5; margin-bottom: 6px; }
-.bar-stand { background: linear-gradient(90deg, var(--stand-c2), var(--stand-c)); }
-.bar-walk { background: linear-gradient(90deg, var(--walk-c2), var(--walk-c)); }
-.bar-sit { background: linear-gradient(90deg, var(--sit-c2), var(--sit-c)); }
+.bar-act { background: linear-gradient(90deg, var(--act-c2), var(--act-c)); }
 .bar-rest { background: linear-gradient(90deg, var(--rest-c2), var(--rest-c)); }
+.bar-ex { background: linear-gradient(90deg, var(--ex-c2), var(--ex-c)); }
 .history-day-times { display: flex; justify-content: space-between; font-size: 10px; font-weight: 600; }
 .alert { position: fixed; top: 16px; left: 16px; right: 16px; background: white; padding: 16px 20px; border-radius: var(--radius-sm); box-shadow: 0 8px 32px rgba(0,0,0,0.15); z-index: 100; transform: translateY(-200px); transition: transform 0.4s ease; display: flex; align-items: center; gap: 12px; border-left: 4px solid #ddd; max-width: 420px; margin: 0 auto; }
 .alert.show { transform: translateY(0); }
-.alert.stand { border-left-color: var(--stand-c); }
-.alert.walk { border-left-color: var(--walk-c); }
-.alert.sit { border-left-color: var(--sit-c); }
+.alert.act { border-left-color: var(--act-c); }
 .alert.rest { border-left-color: var(--rest-c); }
+.alert.ex { border-left-color: var(--ex-c); }
 .alert.over { border-left-color: #e53e3e !important; background: #fff5f5; }
 .alert.over .alert-title { color: #c53030; }
 .alert-emoji { font-size: 28px; }
@@ -147,22 +136,20 @@ body.lying .progress-fill, body.resting .progress-fill { background: linear-grad
 .step-btn:active { transform: scale(0.9); }
 .date-input { font-family: 'Nunito', sans-serif; font-size: 14px; padding: 8px 10px; border: 1.5px solid var(--border); border-radius: 10px; background: white; color: var(--text); }
 .step-val { font-family: 'Nunito', sans-serif; font-size: 18px; font-weight: 800; min-width: 40px; text-align: center; }
-.detail-summary { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; margin-bottom: 20px; }
+.detail-summary { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 20px; }
 .summary-item { background: #f9f9fc; border-radius: 12px; padding: 12px 6px; text-align: center; }
-.stand-sum { background: linear-gradient(135deg,#ffe5ec,#ffe9c8); }
-.walk-sum { background: linear-gradient(135deg,#d4f5e9,#c8f0e0); }
-.sit-sum { background: linear-gradient(135deg,#fff8e1,#ffe0b2); }
+.act-sum { background: linear-gradient(135deg,#fff8e1,#ffe0b2); }
 .rest-sum { background: linear-gradient(135deg,#e3f2fd,#e8eaff); }
+.ex-sum { background: linear-gradient(135deg,#d4f5e9,#c8f0e0); }
 .summary-emoji { font-size: 20px; margin-bottom: 4px; }
 .summary-time { font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 800; }
 .summary-count { font-size: 10px; color: var(--text-dim); margin-top: 2px; font-weight: 600; }
 .timeline-title { font-size: 13px; font-weight: 700; margin-bottom: 10px; color: var(--text); }
 .timeline { display: flex; flex-direction: column; gap: 8px; }
 .tl-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 12px; background: #f9f9fc; border-left: 3px solid #ddd; }
-.tl-stand { border-left-color: var(--stand-c); background: linear-gradient(90deg,#fff5f0,#fafafa 30%); }
-.tl-walk { border-left-color: var(--walk-c); background: linear-gradient(90deg,#f0fff4,#fafafa 30%); }
-.tl-sit { border-left-color: var(--sit-c); background: linear-gradient(90deg,#fffbf0,#fafafa 30%); }
+.tl-act { border-left-color: var(--act-c); background: linear-gradient(90deg,#fffbf0,#fafafa 30%); }
 .tl-rest { border-left-color: var(--rest-c); background: linear-gradient(90deg,#f0f5ff,#fafafa 30%); }
+.tl-ex { border-left-color: var(--ex-c); background: linear-gradient(90deg,#f0fff4,#fafafa 30%); }
 .tl-emoji { font-size: 22px; flex-shrink: 0; }
 .tl-body { flex: 1; min-width: 0; }
 .tl-top { display: flex; justify-content: space-between; align-items: baseline; }
@@ -189,7 +176,7 @@ body.lying .progress-fill, body.resting .progress-fill { background: linear-grad
 <div class="container">
   <div class="header">
     <div class="header-info">
-      <div class="day-counter" id="dayCounter">🌿 수술 후 57일째 · 9주차 1일 · 5/13</div>
+      <div class="day-counter" id="dayCounter">🌿 수술 후 --일째</div>
       <div class="streak-line">
         <span class="streak-mini" id="smokeStreak">🚭 금연 --일째</span>
         <span class="streak-sep">·</span>
@@ -208,14 +195,13 @@ body.lying .progress-fill, body.resting .progress-fill { background: linear-grad
     <div class="timer-sub" id="timerSub">활동을 선택해주세요</div>
     <div class="timer-cumulative" id="timerCumulative"></div>
     <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
-    <div class="limit-info" id="limitInfoText">서있기 10/15 · 앉기 20/25 · 걷기 15/20 · 누워 ~60분</div>
+    <div class="limit-info" id="limitInfoText">활동 50/60 · 휴식 ~20분 · 운동 15/30</div>
   </div>
 
   <div class="action-grid">
-    <button class="action-btn" id="btnLie"><div class="action-emoji">🛌</div><div class="action-name">누워있기</div></button>
-    <button class="action-btn" id="btnStand"><div class="action-emoji">🧍</div><div class="action-name">서있기</div></button>
-    <button class="action-btn" id="btnSit"><div class="action-emoji">🪑</div><div class="action-name">앉기</div></button>
-    <button class="action-btn" id="btnWalk"><div class="action-emoji">🚶</div><div class="action-name">걷기</div></button>
+    <button class="action-btn" id="btnAct"><div class="action-emoji">💼</div><div class="action-name">활동</div></button>
+    <button class="action-btn" id="btnRest"><div class="action-emoji">🛌</div><div class="action-name">휴식</div></button>
+    <button class="action-btn" id="btnEx"><div class="action-emoji">🤸</div><div class="action-name">운동</div></button>
   </div>
 
   <button class="stop-btn" id="stopBtn" disabled>⏹ 정지</button>
@@ -223,20 +209,16 @@ body.lying .progress-fill, body.resting .progress-fill { background: linear-grad
   <div class="today-card" id="todayCard">
     <div class="card-title">📊 오늘 누적 <span class="card-title-sub" id="todayCycles">0 사이클</span></div>
     <div class="today-row">
-      <div class="today-row-left"><div class="today-row-emoji row-rest">🛌</div><div><div class="today-row-name">누워있기</div><div class="today-row-detail" id="lieDetail">0회 · 목표 720분</div></div></div>
-      <div class="today-row-time t-rest" id="lieTotal">0분</div>
+      <div class="today-row-left"><div class="today-row-emoji row-act">💼</div><div><div class="today-row-name">활동</div><div class="today-row-detail" id="actDetail">0회 · 목표 360분</div></div></div>
+      <div class="today-row-time t-act" id="actTotal">0분</div>
     </div>
     <div class="today-row">
-      <div class="today-row-left"><div class="today-row-emoji row-stand">🧍</div><div><div class="today-row-name">서있기</div><div class="today-row-detail" id="standDetail">0회 · 목표 120분</div></div></div>
-      <div class="today-row-time t-stand" id="standTotal">0분</div>
+      <div class="today-row-left"><div class="today-row-emoji row-rest">🛌</div><div><div class="today-row-name">휴식</div><div class="today-row-detail" id="restDetail">0회 · 목표 480분</div></div></div>
+      <div class="today-row-time t-rest" id="restTotal">0분</div>
     </div>
     <div class="today-row">
-      <div class="today-row-left"><div class="today-row-emoji row-sit">🪑</div><div><div class="today-row-name">앉기(등받이)</div><div class="today-row-detail" id="sitDetail">0회 · 목표 180분</div></div></div>
-      <div class="today-row-time t-sit" id="sitTotal">0분</div>
-    </div>
-    <div class="today-row">
-      <div class="today-row-left"><div class="today-row-emoji row-walk">🚶</div><div><div class="today-row-name">걷기</div><div class="today-row-detail" id="walkDetail">0회 · 목표 90분</div></div></div>
-      <div class="today-row-time t-walk" id="walkTotal">0분</div>
+      <div class="today-row-left"><div class="today-row-emoji row-ex">🤸</div><div><div class="today-row-name">운동</div><div class="today-row-detail" id="exDetail">0회 · 목표 30분</div></div></div>
+      <div class="today-row-time t-ex" id="exTotal">0분</div>
     </div>
   </div>
 
@@ -271,62 +253,45 @@ body.lying .progress-fill, body.resting .progress-fill { background: linear-grad
         <div class="settings-section-title">⏱ 회당 권장 / 한계 (분)</div>
 
         <div class="setting-row">
-          <div><div class="setting-label">🛌 누워있기</div><div class="setting-sub">권장 도달 시 알림 (한계 없음)</div></div>
+          <div><div class="setting-label">💼 활동 — 권장</div><div class="setting-sub">권장 시간 도달 시 알림</div></div>
           <div class="stepper">
-            <button class="step-btn" data-key="lie" data-field="rec" data-d="-10">−</button>
-            <div class="step-val" id="limitLieRec">60</div>
-            <button class="step-btn" data-key="lie" data-field="rec" data-d="10">+</button>
+            <button class="step-btn" data-key="act" data-field="rec" data-d="-5">−</button>
+            <div class="step-val" id="limitActRec">50</div>
+            <button class="step-btn" data-key="act" data-field="rec" data-d="5">+</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div><div class="setting-label">💼 활동 — 한계</div><div class="setting-sub">초과 시 경고 (임계점)</div></div>
+          <div class="stepper">
+            <button class="step-btn" data-key="act" data-field="max" data-d="-5">−</button>
+            <div class="step-val" id="limitActMax">60</div>
+            <button class="step-btn" data-key="act" data-field="max" data-d="5">+</button>
           </div>
         </div>
 
         <div class="setting-row">
-          <div><div class="setting-label">🧍 서있기 — 권장</div><div class="setting-sub">권장 시간 도달 시 알림</div></div>
+          <div><div class="setting-label">🛌 휴식</div><div class="setting-sub">권장 도달 시 알림 (한계 없음)</div></div>
           <div class="stepper">
-            <button class="step-btn" data-key="stand" data-field="rec" data-d="-1">−</button>
-            <div class="step-val" id="limitStandRec">10</div>
-            <button class="step-btn" data-key="stand" data-field="rec" data-d="1">+</button>
-          </div>
-        </div>
-        <div class="setting-row">
-          <div><div class="setting-label">🧍 서있기 — 한계</div><div class="setting-sub">초과 시 경고 (cage 부담)</div></div>
-          <div class="stepper">
-            <button class="step-btn" data-key="stand" data-field="max" data-d="-1">−</button>
-            <div class="step-val" id="limitStandMax">15</div>
-            <button class="step-btn" data-key="stand" data-field="max" data-d="1">+</button>
+            <button class="step-btn" data-key="rest" data-field="rec" data-d="-5">−</button>
+            <div class="step-val" id="limitRestRec">20</div>
+            <button class="step-btn" data-key="rest" data-field="rec" data-d="5">+</button>
           </div>
         </div>
 
         <div class="setting-row">
-          <div><div class="setting-label">🪑 앉기(등받이) — 권장</div><div class="setting-sub">권장 시간 도달 시 알림</div></div>
+          <div><div class="setting-label">🤸 운동 — 권장</div><div class="setting-sub">권장 시간 도달 시 알림</div></div>
           <div class="stepper">
-            <button class="step-btn" data-key="sit" data-field="rec" data-d="-1">−</button>
-            <div class="step-val" id="limitSitRec">20</div>
-            <button class="step-btn" data-key="sit" data-field="rec" data-d="1">+</button>
+            <button class="step-btn" data-key="ex" data-field="rec" data-d="-5">−</button>
+            <div class="step-val" id="limitExRec">15</div>
+            <button class="step-btn" data-key="ex" data-field="rec" data-d="5">+</button>
           </div>
         </div>
         <div class="setting-row">
-          <div><div class="setting-label">🪑 앉기(등받이) — 한계</div><div class="setting-sub">초과 시 경고 (cage 부담)</div></div>
+          <div><div class="setting-label">🤸 운동 — 한계</div><div class="setting-sub">초과 시 경고</div></div>
           <div class="stepper">
-            <button class="step-btn" data-key="sit" data-field="max" data-d="-1">−</button>
-            <div class="step-val" id="limitSitMax">25</div>
-            <button class="step-btn" data-key="sit" data-field="max" data-d="1">+</button>
-          </div>
-        </div>
-
-        <div class="setting-row">
-          <div><div class="setting-label">🚶 걷기 — 권장</div><div class="setting-sub">권장 시간 도달 시 알림</div></div>
-          <div class="stepper">
-            <button class="step-btn" data-key="walk" data-field="rec" data-d="-1">−</button>
-            <div class="step-val" id="limitWalkRec">15</div>
-            <button class="step-btn" data-key="walk" data-field="rec" data-d="1">+</button>
-          </div>
-        </div>
-        <div class="setting-row">
-          <div><div class="setting-label">🚶 걷기 — 한계</div><div class="setting-sub">초과 시 경고 (cage 부담)</div></div>
-          <div class="stepper">
-            <button class="step-btn" data-key="walk" data-field="max" data-d="-1">−</button>
-            <div class="step-val" id="limitWalkMax">20</div>
-            <button class="step-btn" data-key="walk" data-field="max" data-d="1">+</button>
+            <button class="step-btn" data-key="ex" data-field="max" data-d="-5">−</button>
+            <div class="step-val" id="limitExMax">30</div>
+            <button class="step-btn" data-key="ex" data-field="max" data-d="5">+</button>
           </div>
         </div>
       </div>
@@ -335,35 +300,27 @@ body.lying .progress-fill, body.resting .progress-fill { background: linear-grad
         <div class="settings-section-title">📊 오늘 누적 목표 (분)</div>
 
         <div class="setting-row">
-          <div><div class="setting-label">🛌 누워있기</div><div class="setting-sub">하루 합계 목표</div></div>
+          <div><div class="setting-label">💼 활동</div><div class="setting-sub">하루 합계 목표</div></div>
           <div class="stepper">
-            <button class="step-btn" data-daily="lie" data-d="-30">−</button>
-            <div class="step-val" id="dailyLie">720</div>
-            <button class="step-btn" data-daily="lie" data-d="30">+</button>
+            <button class="step-btn" data-daily="act" data-d="-30">−</button>
+            <div class="step-val" id="dailyAct">360</div>
+            <button class="step-btn" data-daily="act" data-d="30">+</button>
           </div>
         </div>
         <div class="setting-row">
-          <div><div class="setting-label">🧍 서있기</div><div class="setting-sub">하루 합계 목표</div></div>
+          <div><div class="setting-label">🛌 휴식</div><div class="setting-sub">하루 합계 목표</div></div>
           <div class="stepper">
-            <button class="step-btn" data-daily="stand" data-d="-10">−</button>
-            <div class="step-val" id="dailyStand">120</div>
-            <button class="step-btn" data-daily="stand" data-d="10">+</button>
+            <button class="step-btn" data-daily="rest" data-d="-30">−</button>
+            <div class="step-val" id="dailyRest">480</div>
+            <button class="step-btn" data-daily="rest" data-d="30">+</button>
           </div>
         </div>
         <div class="setting-row">
-          <div><div class="setting-label">🪑 앉기</div><div class="setting-sub">하루 합계 목표</div></div>
+          <div><div class="setting-label">🤸 운동</div><div class="setting-sub">하루 합계 목표</div></div>
           <div class="stepper">
-            <button class="step-btn" data-daily="sit" data-d="-10">−</button>
-            <div class="step-val" id="dailySit">180</div>
-            <button class="step-btn" data-daily="sit" data-d="10">+</button>
-          </div>
-        </div>
-        <div class="setting-row">
-          <div><div class="setting-label">🚶 걷기</div><div class="setting-sub">하루 합계 목표</div></div>
-          <div class="stepper">
-            <button class="step-btn" data-daily="walk" data-d="-10">−</button>
-            <div class="step-val" id="dailyWalk">90</div>
-            <button class="step-btn" data-daily="walk" data-d="10">+</button>
+            <button class="step-btn" data-daily="ex" data-d="-5">−</button>
+            <div class="step-val" id="dailyEx">30</div>
+            <button class="step-btn" data-daily="ex" data-d="5">+</button>
           </div>
         </div>
       </div>
@@ -397,32 +354,29 @@ body.lying .progress-fill, body.resting .progress-fill { background: linear-grad
 <script>
 'use strict';
 
-const LIMITS_KEY = 'recoveryLimits_v2';
-const DAILY_KEY = 'recoveryDaily_v2';
+const LIMITS_KEY = 'recoveryLimits_v3';
+const DAILY_KEY = 'recoveryDaily_v3';
 const SURGERY = new Date('2026-03-18T00:00:00');
-const STORE_KEY = 'recoveryTimer_v4';
+const STORE_KEY = 'recoveryTimer_v5';
 const SMOKE_KEY = 'recoverySmokeStart_v1';
 const DRINK_KEY = 'recoveryDrinkStart_v1';
-// 기본값: 수술일과 동일 (수술 이후로 가정). 사용자가 설정에서 변경 가능.
 const DEFAULT_QUIT = '2026-03-18';
-const HISTORY_KEY = 'recoveryHistory_v4';
+const HISTORY_KEY = 'recoveryHistory_v5';
 
 const ACTIONS = {
-  lie:   { emoji:'🛌', name:'누워있기',     cls:'lying',    btnCls:'active-lie',   limitKey:'lie',   noLimit:true  }, // 한계 없음, 권장만
-  stand: { emoji:'🧍', name:'서있기',       cls:'standing', btnCls:'active-stand', limitKey:'stand', noLimit:false },
-  sit:   { emoji:'🪑', name:'앉기(등받이)', cls:'sitting',  btnCls:'active-sit',   limitKey:'sit',   noLimit:false },
-  walk:  { emoji:'🚶', name:'걷기',         cls:'walking',  btnCls:'active-walk',  limitKey:'walk',  noLimit:false },
+  act:  { emoji:'💼', name:'활동', cls:'activity', btnCls:'active-act',  limitKey:'act',  noLimit:false, colorCls:'act'  },
+  rest: { emoji:'🛌', name:'휴식', cls:'resting',  btnCls:'active-rest', limitKey:'rest', noLimit:true,  colorCls:'rest' },
+  ex:   { emoji:'🤸', name:'운동', cls:'exercise', btnCls:'active-ex',   limitKey:'ex',   noLimit:false, colorCls:'ex'   },
 };
 
-// 회당 권장/한계 (분). lie는 권장만 사용.
+// 회당 권장/한계 (분)
 const DEFAULT_LIMITS = {
-  lie:   { rec: 60, max: 120 },   // 누워있기: 권장 60분 도달 시 알림
-  stand: { rec: 10, max: 15 },
-  sit:   { rec: 20, max: 25 },
-  walk:  { rec: 15, max: 20 },
+  act:  { rec: 50, max: 60 },   // 활동: 50분 권장, 60분 임계점
+  rest: { rec: 20, max: 60 },   // 휴식: 20분 권장 (한계 없음)
+  ex:   { rec: 15, max: 30 },   // 운동: 15분 권장, 30분 한계
 };
 // 오늘 누적 목표 (분)
-const DEFAULT_DAILY = { stand: 120, walk: 90, sit: 180, lie: 720 };
+const DEFAULT_DAILY = { act: 360, rest: 480, ex: 30 };
 
 let LIMITS_MIN = JSON.parse(JSON.stringify(DEFAULT_LIMITS));
 let DAILY_MIN  = Object.assign({}, DEFAULT_DAILY);
@@ -458,7 +412,6 @@ function loadLimits() {
     const raw = localStorage.getItem(LIMITS_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      // 각 키별로 머지 (rec, max 모두 보존)
       Object.keys(LIMITS_MIN).forEach(k => {
         if (parsed[k]) LIMITS_MIN[k] = { ...LIMITS_MIN[k], ...parsed[k] };
       });
@@ -473,7 +426,6 @@ function saveLimits() {
   try { localStorage.setItem(LIMITS_KEY, JSON.stringify(LIMITS_MIN)); } catch(e){}
   try { localStorage.setItem(DAILY_KEY, JSON.stringify(DAILY_MIN)); } catch(e){}
 }
-// 회당 권장/한계 (초 단위)
 function recSec(key) { return LIMITS_MIN[key].rec * 60; }
 function maxSec(key) { return LIMITS_MIN[key].max * 60; }
 
@@ -498,9 +450,6 @@ function vib(p) { if (navigator.vibrate) navigator.vibrate(p); }
 
 // ============================================================
 // 백그라운드/포그라운드 알림 시스템
-// 전략 1: Notification API + setTimeout (포그라운드 + 가벼운 백그라운드)
-// 전략 2: Wake Lock으로 화면 켜진 동안 페이지 유지
-// 전략 3: 복귀 시 만료 감지 → 즉시 강력 알림 (visibilitychange/focus)
 // ============================================================
 let _wakeLock = null;
 
@@ -510,7 +459,7 @@ async function requestWakeLock() {
       _wakeLock = await navigator.wakeLock.request('screen');
       _wakeLock.addEventListener('release', () => { _wakeLock = null; });
     }
-  } catch(e) { /* 사용자가 화면 끄면 자동 해제됨 */ }
+  } catch(e) {}
 }
 function releaseWakeLock() {
   try { if (_wakeLock) { _wakeLock.release(); _wakeLock = null; } } catch(e){}
@@ -577,14 +526,14 @@ function fireNotification(action, kind) {
   if (kind === 'rec') {
     if (def.noLimit) {
       title = `${def.emoji} ${def.name} ${lim.rec}분 도달`;
-      body = '충분히 쉬셨어요. 활동 시작해도 좋아요';
+      body = '충분히 쉬셨어요. 다음 활동 시작해도 좋아요';
     } else {
       title = `${def.emoji} ${def.name} 권장 ${lim.rec}분`;
-      body = `한계 ${lim.max}분 전 자세를 바꾸세요`;
+      body = `한계 ${lim.max}분 전 휴식하세요`;
     }
   } else {
     title = `⚠ ${def.name} 한계 ${lim.max}분 초과`;
-    body = '지금 즉시 자세를 바꿔주세요';
+    body = '지금 즉시 휴식하세요';
   }
   try {
     const n = new Notification(title, {
@@ -598,7 +547,6 @@ function fireNotification(action, kind) {
   } catch(e){}
 }
 
-// 복귀 시 만료 감지
 function checkExpiryOnReturn() {
   if (!S.current || !S.startTime) return;
   const def = ACTIONS[S.current];
@@ -623,46 +571,15 @@ function checkExpiryOnReturn() {
   }
 }
 
-function getCumulativeForGroup(group) {
-  const today = history[todayKey()] || {};
-  let total = 0;
-  for (const [action, def] of Object.entries(ACTIONS)) {
-    if (def.group === group) {
-      total += (today[action]||[]).reduce((a,r)=>a+getSec(r), 0);
-    }
-  }
-  if (S.current && ACTIONS[S.current].group === group) {
-    total += Math.round((Date.now() - S.startTime) / 1000);
-  }
-  return total;
-}
-
 function getSessionElapsed() {
   if (!S.current || !S.startTime) return 0;
   return Math.round((Date.now() - S.startTime) / 1000);
 }
 
-function startActivity(action, skipChainReset) {
-  // 같은 활동이 이미 진행 중이면 무시 (실수 탭 방지)
+function startActivity(action) {
   if (S.current === action) return;
-  // 알림 권한 요청 (첫 사용 시) — 사용자 제스처 필수
   ensureNotifPermission();
-  if (S.current) stopActivity(false, false); // 다른 활동 정리 시 자동 누워있기 체인 방지
-  // 누워있기가 아닌 활동을 새로 시작하면 lie 권장 기본값 복구
-  // (체인으로 시작된 누워있기는 동적 값 유지, skipChainReset=true)
-  if (action !== 'lie' && !skipChainReset) {
-    LIMITS_MIN.lie.rec = DEFAULT_LIMITS.lie.rec;
-    LIMITS_MIN.lie.max = DEFAULT_LIMITS.lie.max;
-    // 사용자가 수동 변경한 값이 있으면 그걸 복구
-    try {
-      const raw = localStorage.getItem(LIMITS_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed.lie) LIMITS_MIN.lie = { ...LIMITS_MIN.lie, ...parsed.lie };
-      }
-    } catch(e){}
-    renderLimitInfo();
-  }
+  if (S.current) stopActivity(false);
   S.current = action;
   S.startTime = Date.now();
   S.alertedRec = false;
@@ -676,29 +593,28 @@ function startActivity(action, skipChainReset) {
   document.querySelectorAll('.action-btn').forEach(b => {
     b.className = 'action-btn';
   });
-  const btn = $(`btn${action.charAt(0).toUpperCase()+action.slice(1)}`);
+  const btnIds = { act: 'btnAct', rest: 'btnRest', ex: 'btnEx' };
+  const btn = $(btnIds[action]);
   if (btn) btn.classList.add(def.btnCls);
   saveState();
   startTick();
-  if (!skipChainReset) showToast(`${def.emoji} ${def.name} 시작`);
+  showToast(`${def.emoji} ${def.name} 시작`);
   scheduleNotification();
 }
 
-function stopActivity(showMsg, autoChain) {
+function stopActivity(showMsg) {
   if (showMsg === undefined) showMsg = true;
-  if (autoChain === undefined) autoChain = true;
   if (!S.current) return;
   const elapsed = Math.round((Date.now() - S.startTime) / 1000);
   const startTs = S.startTime;
   const action = S.current;
   if (elapsed >= 5) saveToHistory(action, elapsed, startTs);
-  const wasNonLie = (action !== 'lie');
   S.current = null;
   S.startTime = null;
   S.alertedRec = false;
   S.alertedMax = false;
   clearInterval(S.timer);
-  cancelNotification(); // 예약 알림/Wake Lock 해제
+  cancelNotification();
   try { localStorage.removeItem(STORE_KEY); } catch(e){}
   document.body.className = '';
   $('statusEmoji').textContent = '⏸';
@@ -709,7 +625,7 @@ function stopActivity(showMsg, autoChain) {
   $('timerCumulative').textContent = '';
   $('timerCumulative').className = 'timer-cumulative';
   $('progressFill').style.width = '0%';
-  $('progressFill').classList.remove('over');
+  $('progressFill').classList.remove('over', 'warn');
   $('stopBtn').disabled = true;
   document.querySelectorAll('.action-btn').forEach(b => {
     b.className = 'action-btn';
@@ -718,18 +634,6 @@ function stopActivity(showMsg, autoChain) {
   renderHistory();
   if (showMsg && elapsed >= 5) {
     showToast(`${ACTIONS[action].emoji} ${ACTIONS[action].name} ${formatMin(elapsed)} 기록`);
-  }
-  // 비누워있기 활동을 사용자가 정지한 경우 → 권장 누워있기 시간 안내만 (자동 시작 X)
-  if (autoChain && wasNonLie && elapsed >= 5) {
-    const load = calculateAccumulatedLoad();
-    const recMin = recommendedLieMinutes(load);
-    // 다음 누워있기를 위해 권장값만 갱신 (사용자가 직접 눌러야 시작됨)
-    LIMITS_MIN.lie.rec = recMin;
-    LIMITS_MIN.lie.max = Math.max(recMin + 30, 120);
-    renderLimitInfo();
-    setTimeout(() => {
-      showToast(`🛌 누워있기 ${recMin}분 권장 (누적 부하 ${Math.round(load)})`);
-    }, 800);
   }
 }
 
@@ -749,10 +653,8 @@ function updateTick() {
   $('timerDisplay').textContent = formatTime(elapsed);
   $('timerSub').textContent = `이번 세션 ${formatTime(elapsed)}`;
 
-  // 상태 텍스트 & 진행바
   let statusText, statusCls;
   if (def.noLimit) {
-    // 누워있기: 권장 도달 시 ✓ 표시만, 한계 개념 없음
     if (elapsed < rec) {
       statusText = `${formatMin(elapsed)} / 권장 ${rec/60}분`;
       statusCls = 'timer-cumulative';
@@ -761,12 +663,12 @@ function updateTick() {
       statusCls = 'timer-cumulative';
     }
     $('progressFill').style.width = Math.min(100, (elapsed/rec)*100) + '%';
-    $('progressFill').classList.remove('over');
+    $('progressFill').classList.remove('over', 'warn');
   } else if (elapsed < rec) {
     statusText = `${formatMin(elapsed)} / 권장 ${rec/60}분 · 한계 ${max/60}분`;
     statusCls = 'timer-cumulative';
     $('progressFill').style.width = Math.min(100, (elapsed/rec)*100) + '%';
-    $('progressFill').classList.remove('over');
+    $('progressFill').classList.remove('over', 'warn');
   } else if (elapsed < max) {
     statusText = `${formatMin(elapsed)} · 권장 초과 · 한계 ${max/60}분`;
     statusCls = 'timer-cumulative warn';
@@ -785,7 +687,6 @@ function updateTick() {
   $('timerCumulative').textContent = statusText;
   $('timerCumulative').className = statusCls;
 
-  // 알림: 권장 도달 / 한계 초과 두 단계
   if (!S.alertedRec && elapsed >= rec) {
     S.alertedRec = true;
     saveState();
@@ -809,23 +710,19 @@ function showAlert(action, kind) {
   const def = ACTIONS[action];
   const lim = LIMITS_MIN[def.limitKey];
   $('alertEmoji').textContent = def.emoji;
-  const colorCls = action === 'lie' ? 'rest'
-    : action === 'stand' ? 'stand'
-    : action === 'walk' ? 'walk'
-    : 'sit';
+  const colorCls = def.colorCls;
   if (kind === 'rec') {
     if (def.noLimit) {
-      // 누워있기: 권장 도달 = 충분히 쉼
       $('alertTitle').textContent = `${def.name} ${lim.rec}분 도달`;
-      $('alertSub').textContent = '충분히 쉬셨어요. 활동 시작해도 좋아요';
+      $('alertSub').textContent = '충분히 쉬셨어요. 다음 활동 시작해도 좋아요';
     } else {
       $('alertTitle').textContent = `${def.name} 권장 ${lim.rec}분 도달`;
-      $('alertSub').textContent = `한계 ${lim.max}분 전 자세를 바꾸세요`;
+      $('alertSub').textContent = `한계 ${lim.max}분 전 휴식하세요`;
     }
     banner.className = 'alert show ' + colorCls;
-  } else { // 'max'
+  } else {
     $('alertTitle').textContent = `⚠ ${def.name} 한계 ${lim.max}분 초과`;
-    $('alertSub').textContent = '지금 즉시 자세를 바꿔주세요 (cage 부담)';
+    $('alertSub').textContent = '지금 즉시 휴식하세요';
     banner.className = 'alert show over ' + colorCls;
   }
   setTimeout(() => banner.classList.remove('show'), 8000);
@@ -860,7 +757,6 @@ function loadState() {
     const v = JSON.parse(raw);
     if (v.current && v.startTime && ACTIONS[v.current]) {
       const elapsed = Math.round((Date.now() - v.startTime) / 1000);
-      // 48시간 초과한 세션은 폐기 (자고 일어나도 복원되도록 24h → 48h)
       if (elapsed > 48 * 3600) {
         try { localStorage.removeItem(STORE_KEY); } catch(e){}
         return;
@@ -874,11 +770,11 @@ function loadState() {
       $('statusEmoji').textContent = def.emoji;
       $('statusName').textContent = def.name + ' 중';
       $('stopBtn').disabled = false;
-      const btn = $(`btn${v.current.charAt(0).toUpperCase()+v.current.slice(1)}`);
+      const btnIds = { act: 'btnAct', rest: 'btnRest', ex: 'btnEx' };
+      const btn = $(btnIds[v.current]);
       if (btn) btn.classList.add(def.btnCls);
       startTick();
-      scheduleNotification(); // 복귀 시 다시 알림 예약
-      // 복원 알림 (의도치 않은 상태 즉시 인지를 위해 항상 표시)
+      scheduleNotification();
       showToast(`${def.emoji} ${def.name} 복원됨 (${formatTime(elapsed)} 진행 중)`);
     }
   } catch(e){}
@@ -888,19 +784,21 @@ function loadHistory() {
   try {
     let raw = localStorage.getItem(HISTORY_KEY);
     if (!raw) {
-      // v3에서 마이그레이션 시도 (rest -> lie)
-      const oldRaw = localStorage.getItem('recoveryHistory_v3');
+      // v4에서 마이그레이션 시도 (lie/stand/sit/walk -> act/rest/ex)
+      const oldRaw = localStorage.getItem('recoveryHistory_v4');
       if (oldRaw) {
         try {
           const oldH = JSON.parse(oldRaw);
           const newH = {};
           Object.keys(oldH).forEach(dateKey => {
             const day = oldH[dateKey];
+            // 누워있기 → 휴식, stand/sit/walk → 활동
+            const restArr = day.lie || [];
+            const actArr = [...(day.stand||[]), ...(day.sit||[]), ...(day.walk||[])];
             newH[dateKey] = {
-              lie: day.rest || [],
-              stand: day.stand || [],
-              sit: day.sit || [],
-              walk: day.walk || [],
+              act: actArr,
+              rest: restArr,
+              ex: [],
             };
           });
           history = newH;
@@ -917,7 +815,7 @@ function loadHistory() {
 
 function saveToHistory(action, seconds, startTs) {
   const key = todayKey();
-  if (!history[key]) history[key] = { lie:[], stand:[], sit:[], walk:[] };
+  if (!history[key]) history[key] = { act:[], rest:[], ex:[] };
   if (!history[key][action]) history[key][action] = [];
   history[key][action].push({
     sec: seconds,
@@ -927,47 +825,10 @@ function saveToHistory(action, seconds, startTs) {
   try { localStorage.setItem(HISTORY_KEY, JSON.stringify(history)); } catch(e){}
 }
 
-// 부하 계산: 직전 누워있기 이후의 stand/sit/walk 모두 누적
-// 부하 지수: stand=100, sit=110(등받이 가정), walk=130(동적 부하)
-const LOAD_FACTOR = { stand: 100, sit: 110, walk: 130 };
-
-function calculateAccumulatedLoad() {
-  const key = todayKey();
-  const today = history[key];
-  if (!today) return 0;
-  const allSessions = [];
-  ['lie','stand','sit','walk'].forEach(action => {
-    (today[action] || []).forEach(rec => {
-      const sec = (typeof rec === 'object') ? rec.sec : rec;
-      const start = (typeof rec === 'object' && rec.start) ? rec.start : 0;
-      allSessions.push({ action, sec, start });
-    });
-  });
-  allSessions.sort((a, b) => a.start - b.start);
-  let lastLieIdx = -1;
-  for (let i = allSessions.length - 1; i >= 0; i--) {
-    if (allSessions[i].action === 'lie') { lastLieIdx = i; break; }
-  }
-  let totalLoad = 0;
-  for (let i = lastLieIdx + 1; i < allSessions.length; i++) {
-    const s = allSessions[i];
-    if (s.action === 'lie') continue;
-    totalLoad += (s.sec / 60) * (LOAD_FACTOR[s.action] || 100);
-  }
-  return totalLoad;
-}
-
-function recommendedLieMinutes(load) {
-  // 기준: stand 10 + sit 20 정상 사이클 = 3200 단위 → 60분
-  if (load <= 0) return 30;
-  const minutes = Math.round((load / 3200) * 60);
-  return Math.max(20, Math.min(90, minutes));
-}
-
 function renderToday() {
   const key = todayKey();
-  const today = history[key] || { lie:[], stand:[], sit:[], walk:[] };
-  ['lie','stand','sit','walk'].forEach(action => {
+  const today = history[key] || { act:[], rest:[], ex:[] };
+  ['act','rest','ex'].forEach(action => {
     const arr = today[action] || [];
     const total = arr.reduce((a,r)=>a+getSec(r), 0);
     const count = arr.length;
@@ -981,8 +842,8 @@ function renderToday() {
       $(`${action}Detail`).textContent = `0회 · 목표 ${targetMin}분`;
     }
   });
-  // 사이클 = 누워있기 횟수 (한 번 누웠다 일어났다가 한 사이클)
-  $('todayCycles').textContent = `${(today.lie||[]).length} 사이클`;
+  // 사이클 = 휴식 횟수
+  $('todayCycles').textContent = `${(today.rest||[]).length} 사이클`;
 }
 
 function renderHistory() {
@@ -994,16 +855,14 @@ function renderHistory() {
   }
   list.innerHTML = keys.map(k => {
     const day = history[k];
-    const lieT = (day.lie||[]).reduce((a,r)=>a+getSec(r),0);
-    const standT = (day.stand||[]).reduce((a,r)=>a+getSec(r),0);
-    const sitT = (day.sit||[]).reduce((a,r)=>a+getSec(r),0);
-    const walkT = (day.walk||[]).reduce((a,r)=>a+getSec(r),0);
-    const total = lieT + standT + sitT + walkT;
-    const cycles = (day.lie||[]).length;
-    const liePct = total>0 ? (lieT/total)*100 : 0;
-    const standPct = total>0 ? (standT/total)*100 : 0;
-    const sitPct = total>0 ? (sitT/total)*100 : 0;
-    const walkPct = total>0 ? (walkT/total)*100 : 0;
+    const actT = (day.act||[]).reduce((a,r)=>a+getSec(r),0);
+    const restT = (day.rest||[]).reduce((a,r)=>a+getSec(r),0);
+    const exT = (day.ex||[]).reduce((a,r)=>a+getSec(r),0);
+    const total = actT + restT + exT;
+    const cycles = (day.rest||[]).length;
+    const actPct = total>0 ? (actT/total)*100 : 0;
+    const restPct = total>0 ? (restT/total)*100 : 0;
+    const exPct = total>0 ? (exT/total)*100 : 0;
     const dateLabel = formatDateLabel(k);
     return `<div class="history-day" data-key="${k}">
       <div class="history-day-header">
@@ -1011,16 +870,14 @@ function renderHistory() {
         <div class="history-day-cycles">${cycles}사이클 · 총 ${formatHM(total)}</div>
       </div>
       <div class="history-day-bars">
-        <div class="bar-rest" style="width:${liePct}%"></div>
-        <div class="bar-stand" style="width:${standPct}%"></div>
-        <div class="bar-sit" style="width:${sitPct}%"></div>
-        <div class="bar-walk" style="width:${walkPct}%"></div>
+        <div class="bar-act" style="width:${actPct}%"></div>
+        <div class="bar-rest" style="width:${restPct}%"></div>
+        <div class="bar-ex" style="width:${exPct}%"></div>
       </div>
       <div class="history-day-times">
-        <span class="t-rest">🛌${formatHM(lieT)}</span>
-        <span class="t-stand">🧍${formatHM(standT)}</span>
-        <span class="t-sit">🪑${formatHM(sitT)}</span>
-        <span class="t-walk">🚶${formatHM(walkT)}</span>
+        <span class="t-act">💼${formatHM(actT)}</span>
+        <span class="t-rest">🛌${formatHM(restT)}</span>
+        <span class="t-ex">🤸${formatHM(exT)}</span>
       </div>
     </div>`;
   }).join('');
@@ -1048,7 +905,7 @@ function updateDayCounter() {
   $('dayCounter').textContent = `🌿 수술 후 ${days}일째 · ${weekNum}주차 ${dayInWeek}일`;
 }
 
-// 금연/금주 상태
+// 금연/금주
 function getQuitStart(key, fallback) {
   try {
     const v = localStorage.getItem(key);
@@ -1077,7 +934,6 @@ function renderStreaks() {
   $('drinkStreak').innerHTML = drinkDays !== null
     ? `🍺 술 안 먹은지 <span class="num">${drinkDays}</span>일째`
     : '🍺 금주 시작일 미설정';
-  // 설정 입력에도 반영
   const smokeInp = $('smokeStartInput');
   const drinkInp = $('drinkStartInput');
   if (smokeInp) smokeInp.value = smokeStart;
@@ -1086,27 +942,21 @@ function renderStreaks() {
 
 function renderLimitInfo() {
   $('limitInfoText').textContent =
-    `서있기 ${LIMITS_MIN.stand.rec}/${LIMITS_MIN.stand.max} · 앉기 ${LIMITS_MIN.sit.rec}/${LIMITS_MIN.sit.max} · 걷기 ${LIMITS_MIN.walk.rec}/${LIMITS_MIN.walk.max} · 누워 ~${LIMITS_MIN.lie.rec}분`;
-  // 회당 권장/한계
-  $('limitLieRec').textContent = LIMITS_MIN.lie.rec;
-  $('limitStandRec').textContent = LIMITS_MIN.stand.rec;
-  $('limitStandMax').textContent = LIMITS_MIN.stand.max;
-  $('limitSitRec').textContent = LIMITS_MIN.sit.rec;
-  $('limitSitMax').textContent = LIMITS_MIN.sit.max;
-  $('limitWalkRec').textContent = LIMITS_MIN.walk.rec;
-  $('limitWalkMax').textContent = LIMITS_MIN.walk.max;
-  // 일일 목표
-  $('dailyLie').textContent = DAILY_MIN.lie;
-  $('dailyStand').textContent = DAILY_MIN.stand;
-  $('dailySit').textContent = DAILY_MIN.sit;
-  $('dailyWalk').textContent = DAILY_MIN.walk;
+    `활동 ${LIMITS_MIN.act.rec}/${LIMITS_MIN.act.max} · 휴식 ~${LIMITS_MIN.rest.rec}분 · 운동 ${LIMITS_MIN.ex.rec}/${LIMITS_MIN.ex.max}`;
+  $('limitActRec').textContent = LIMITS_MIN.act.rec;
+  $('limitActMax').textContent = LIMITS_MIN.act.max;
+  $('limitRestRec').textContent = LIMITS_MIN.rest.rec;
+  $('limitExRec').textContent = LIMITS_MIN.ex.rec;
+  $('limitExMax').textContent = LIMITS_MIN.ex.max;
+  $('dailyAct').textContent = DAILY_MIN.act;
+  $('dailyRest').textContent = DAILY_MIN.rest;
+  $('dailyEx').textContent = DAILY_MIN.ex;
 }
 
 function changeLimit(key, field, delta) {
   if (!LIMITS_MIN[key] || !(field in LIMITS_MIN[key])) return;
   const newVal = LIMITS_MIN[key][field] + delta;
   if (newVal < 1 || newVal > 240) return;
-  // rec <= max 보장 (lie는 max도 있지만 사용 안 함)
   if (field === 'rec' && newVal > LIMITS_MIN[key].max) return;
   if (field === 'max' && newVal < LIMITS_MIN[key].rec) return;
   LIMITS_MIN[key][field] = newVal;
@@ -1116,7 +966,6 @@ function changeLimit(key, field, delta) {
     const def = ACTIONS[S.current];
     if (def.limitKey === key) {
       const elapsed = getSessionElapsed();
-      // 새 설정 기준 아직 안 넘었으면 알림 플래그 리셋
       if (elapsed < recSec(key)) S.alertedRec = false;
       if (elapsed < maxSec(key)) S.alertedMax = false;
       scheduleNotification();
@@ -1127,9 +976,8 @@ function changeLimit(key, field, delta) {
 
 function changeDaily(key, delta) {
   if (!(key in DAILY_MIN)) return;
-  const step = delta;
-  const newVal = DAILY_MIN[key] + step;
-  if (newVal < 10 || newVal > 1440) return;
+  const newVal = DAILY_MIN[key] + delta;
+  if (newVal < 5 || newVal > 1440) return;
   DAILY_MIN[key] = newVal;
   saveLimits();
   renderLimitInfo();
@@ -1142,12 +990,12 @@ function formatHHMM(ts) {
 }
 
 function showDetail(dateKey) {
-  const day = history[dateKey] || { lie:[], stand:[], sit:[], walk:[] };
+  const day = history[dateKey] || { act:[], rest:[], ex:[] };
   const label = formatDateLabel(dateKey);
   $('detailTitle').textContent = `📋 ${label} 상세 기록`;
   const body = $('detailBody');
   const allSessions = [];
-  ['lie','stand','sit','walk'].forEach(action => {
+  ['act','rest','ex'].forEach(action => {
     (day[action]||[]).forEach(rec => {
       allSessions.push({
         action,
@@ -1157,13 +1005,13 @@ function showDetail(dateKey) {
       });
     });
   });
-  const totals = { lie:0, stand:0, sit:0, walk:0 };
+  const totals = { act:0, rest:0, ex:0 };
   allSessions.forEach(s => totals[s.action] += s.sec);
   let summaryHtml = '<div class="detail-summary">';
-  ['lie','stand','sit','walk'].forEach(action => {
+  ['act','rest','ex'].forEach(action => {
     const def = ACTIONS[action];
     const count = allSessions.filter(s => s.action === action).length;
-    const sumCls = action === 'lie' ? 'rest-sum' : action + '-sum';
+    const sumCls = action + '-sum';
     summaryHtml += `<div class="summary-item ${sumCls}">
       <div class="summary-emoji">${def.emoji}</div>
       <div class="summary-text">
@@ -1187,7 +1035,7 @@ function showDetail(dateKey) {
   let html = summaryHtml + '<div class="timeline-title">⏱ 시간순 기록</div><div class="timeline">';
   allSessions.forEach(s => {
     const def = ACTIONS[s.action];
-    const tlCls = s.action === 'lie' ? 'tl-rest' : 'tl-' + s.action;
+    const tlCls = 'tl-' + s.action;
     const timeRange = (s.start && s.end) ? `${formatHHMM(s.start)} ~ ${formatHHMM(s.end)}` : '시간 정보 없음';
     html += `<div class="tl-item ${tlCls}">
       <div class="tl-emoji">${def.emoji}</div>
@@ -1209,10 +1057,10 @@ function showDetail(dateKey) {
 function resync() {
   if (S.current) {
     clearInterval(S.timer);
-    checkExpiryOnReturn(); // 백그라운드에서 만료됐는지 즉시 확인
+    checkExpiryOnReturn();
     updateTick();
     S.timer = setInterval(updateTick, 1000);
-    scheduleNotification(); // 재예약 (visible 동안 setTimeout이 더 정확)
+    scheduleNotification();
   }
 }
 document.addEventListener('visibilitychange', () => {
@@ -1231,23 +1079,20 @@ window.addEventListener('focus', () => {
   renderStreaks();
 });
 window.addEventListener('pageshow', (e) => {
-  // bfcache에서 복원된 경우에도 무조건 resync
   if (S.current) resync();
-  // localStorage에 저장된 세션이 있으면 복원
   if (!S.current) loadState();
 });
 window.addEventListener('pagehide', saveState);
 window.addEventListener('beforeunload', saveState);
-// 주기적 저장 + 화면 갱신 (3초마다 - 더 짧게)
 setInterval(() => { if (S.current) { saveState(); updateTick(); } }, 3000);
 
-// 이벤트 바인딩 - 중복 발생 방지 (click 또는 touchend 중 하나만 처리)
+// 이벤트 바인딩
 let _lastTap = 0;
 function debounceTap(fn) {
   return (e) => {
     if (e) e.preventDefault();
     const now = Date.now();
-    if (now - _lastTap < 350) return; // 350ms 내 중복 탭 무시
+    if (now - _lastTap < 350) return;
     _lastTap = now;
     fn();
   };
@@ -1260,10 +1105,9 @@ function bindBtn(id, action) {
   btn.addEventListener('click', h);
   btn.addEventListener('touchend', h, { passive: false });
 }
-bindBtn('btnLie', 'lie');
-bindBtn('btnStand', 'stand');
-bindBtn('btnSit', 'sit');
-bindBtn('btnWalk', 'walk');
+bindBtn('btnAct', 'act');
+bindBtn('btnRest', 'rest');
+bindBtn('btnEx', 'ex');
 
 const stopBtn = $('stopBtn');
 const stopH = debounceTap(() => stopActivity(true));
@@ -1300,7 +1144,6 @@ $('historyList').addEventListener('click', (e) => {
   if (day && day.dataset.key) showDetail(day.dataset.key);
 });
 
-// 금주 다시 시작 (오늘부터)
 $('drinkReset').addEventListener('click', (e) => {
   e.stopPropagation();
   if (!confirm('금주 카운트를 오늘부터 다시 시작할까요?')) return;
@@ -1311,7 +1154,6 @@ $('drinkReset').addEventListener('click', (e) => {
   showToast('🚫🍺 금주 다시 시작');
 });
 
-// 시작일 직접 변경 (설정 모달)
 $('smokeStartInput').addEventListener('change', (e) => {
   if (e.target.value) {
     setQuitStart(SMOKE_KEY, e.target.value);
@@ -1335,7 +1177,6 @@ renderHistory();
 renderLimitInfo();
 renderStreaks();
 
-// 알림 권한 안내 (denied 또는 default 상태일 때)
 if ('Notification' in window) {
   if (Notification.permission === 'default') {
     setTimeout(() => showToast('🔔 활동 시작 시 알림 권한을 허용해주세요'), 600);
@@ -1345,7 +1186,7 @@ if ('Notification' in window) {
 }
 
 // URL 파라미터 처리 (단축어/Tasker/NFC 연동용)
-// 사용 예: timer.html?action=walk, timer.html?action=stand, timer.html?stop
+// 사용 예: timer.html?action=act, timer.html?action=rest, timer.html?action=ex, timer.html?stop
 function handleUrlParams() {
   try {
     const params = new URLSearchParams(window.location.search);
@@ -1358,7 +1199,6 @@ function handleUrlParams() {
       startActivity(action);
     }
     
-    // URL 파라미터 제거 (히스토리에 남지 않게, 새로고침 시 재실행 방지)
     if (action || shouldStop) {
       const cleanUrl = window.location.pathname;
       window.history.replaceState({}, '', cleanUrl);
