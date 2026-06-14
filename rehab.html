@@ -511,6 +511,13 @@ document.getElementById("mainBtn").onclick=()=>{
       const b=document.getElementById("mainBtn");
       if(autoId){ clearInterval(autoId); autoId=null; b.textContent="▶ 계속"; return; }
       b.textContent="⏸ 일시정지";
+      // 시작 즉시 첫 회("하나") 카운트
+      if(repCount===0){
+        repCount=1;
+        document.getElementById("ringNum").textContent=1;
+        sndCount(); speakCount(1);
+        if(repCount>=cur.reps){ document.getElementById("ringFill").style.strokeDashoffset=0; sndSet(); setTimeout(segDone,400); return; }
+      }
       autoId=setInterval(autoTick,50);
       return;
     }
@@ -526,12 +533,15 @@ document.getElementById("mainBtn").onclick=()=>{
     const b=document.getElementById("mainBtn");
     if(timerId){ clearInterval(timerId); timerId=null; b.textContent="계속"; return; }
     b.textContent="일시정지";
+    speak("시작");
     timerId=setInterval(()=>{
       timeLeft--;
       document.getElementById("ringNum").textContent=Math.max(timeLeft,0);
       const off=628*(1-(cur.secs-timeLeft)/cur.secs);
       document.getElementById("ringFill").style.strokeDashoffset=off;
-      if(timeLeft===3||timeLeft===2||timeLeft===1){ beep(660,0.08,"sine",0.09); }
+      if(timeLeft===3){ speak("셋"); beep(660,0.08,"sine",0.09); }
+      else if(timeLeft===2){ speak("둘"); beep(660,0.08,"sine",0.09); }
+      else if(timeLeft===1){ speak("하나"); beep(660,0.08,"sine",0.09); }
       if(timeLeft<=0){ clearInterval(timerId); timerId=null; sndSet(); segDone(); }
     },1000);
   }
