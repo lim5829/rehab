@@ -369,6 +369,14 @@ function speak(text){
 }
 const KNUM=["","하나","둘","셋","넷","다섯","여섯","일곱","여덟","아홉","열","열하나","열둘","열셋","열넷","열다섯"];
 function speakCount(n){ speak(KNUM[n] || (n+"회")); }
+// 카운트다운용: 남은 초를 한국어로 (10 이하는 고유어, 그 위는 한자어 "이십오")
+function numKo(n){
+  if(n<=10) return KNUM[n] || String(n);
+  const sino=["영","일","이","삼","사","오","육","칠","팔","구"];
+  const tens=["","십","이십","삼십","사십","오십","육십"];
+  const t=Math.floor(n/10), o=n%10;
+  return (tens[t]||"") + (o? sino[o]:"");
+}
 
 function render(){
   const d = daysSince();
@@ -539,9 +547,12 @@ document.getElementById("mainBtn").onclick=()=>{
       document.getElementById("ringNum").textContent=Math.max(timeLeft,0);
       const off=628*(1-(cur.secs-timeLeft)/cur.secs);
       document.getElementById("ringFill").style.strokeDashoffset=off;
-      if(timeLeft===3){ speak("셋"); beep(660,0.08,"sine",0.09); }
-      else if(timeLeft===2){ speak("둘"); beep(660,0.08,"sine",0.09); }
-      else if(timeLeft===1){ speak("하나"); beep(660,0.08,"sine",0.09); }
+      if(timeLeft>0){
+        beep(620,0.06,"sine",0.07); // 매초 틱 소리
+        // 음성: 10초 이하는 매초, 그 위는 5초 단위로 남은 시간 안내
+        if(timeLeft<=10) speak(numKo(timeLeft));
+        else if(timeLeft%5===0) speak(numKo(timeLeft));
+      }
       if(timeLeft<=0){ clearInterval(timerId); timerId=null; sndSet(); segDone(); }
     },1000);
   }
