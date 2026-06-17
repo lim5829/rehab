@@ -479,7 +479,13 @@ function render(){
 
   // 걷기 표시
   document.getElementById("walkTotal").textContent = walk.min;
-  document.getElementById("walkPill").textContent = walk.min>0 ? walk.min+"분 걸음" : "기록 전";
+  const sess=getSession();
+  if(sess){
+    const sec=sessionElapsed(sess);
+    document.getElementById("walkPill").textContent = (sess.running?"▶ ":"⏸ ")+fmtTime(sec)+" 진행중";
+  } else {
+    document.getElementById("walkPill").textContent = walk.min>0 ? walk.min+"분 걸음" : "기록 전";
+  }
   document.querySelectorAll(".ws-opt").forEach(b=>{
     b.classList.remove("sel-none","sel-mid","sel-bad");
     if(walk.symp===b.dataset.s){
@@ -726,9 +732,33 @@ document.getElementById("walkTimerBtn").onclick=()=>{
   openWalkTimer();
 };
 
-let walkTimerId=null, walkSec=0;
+let walkTimerId=null;
+// 진행 중 걷기 세션: localStorage에 시작시각 저장 → 백그라운드/리셋에도 복원
+const WSKEY="walk-session";
+function getSession(){ try{ return JSON.parse(localStorage.getItem(WSKEY)||"null"); }catch(e){ return null; } }
+function setSession(s){ try{ s? localStorage.setItem(WSKEY,JSON.stringify(s)) : localStorage.removeItem(WSKEY); }catch(e){} }
+
+// 누적 경과초 계산 (일시정지 구간 반영)
+function sessionElapsed(s){
+  if(!s) return 0;
+  let base = s.acc || 0;
+  if(s.running && s.startedAt){ base += Math.floor((Date.now()-s.startedAt)/1000); }
+  return base;
+}
+function fmtTime(sec){ const m=Math.floor(sec/60),x=sec%60; return m+":"+(x<10?"0":"")+x; }
+let lastSpokenMin=0;
+
+function updateWalkRing(){
+  const s=getSession();
+  const sec=sessionElapsed(s);
+  document.getElementById("ringNum").textContent=fmtTime(sec);
+  document.getElementById("ringFill").style.strokeDashoffset=628*(1-(sec%60)/60);
+  const m=Math.floor(sec/60);
+  if(m>lastSpokenMin && s && s.running){ lastSpokenMin=m; beep(620,0.08,"sine",0.08); speak(numKo(m)+"분"); }
+}
+
 function openWalkTimer(){
-  clearInterval(walkTimerId); walkSec=0;
+  clearInterval(walkTimerId); walkTimerId=null;
   document.getElementById("ovCat").textContent="걷기";
   document.getElementById("ovCat").style.color="#2fa882";
   document.getElementById("ovCat").style.background="#d6f5e7";
@@ -743,34 +773,56 @@ function openWalkTimer(){
   document.getElementById("ovFoot").style.display="block";
   document.getElementById("skipBtn").style.display="block";
   document.getElementById("skipBtn").textContent="기록하고 닫기";
-  document.getElementById("ringFill").style.strokeDashoffset=628;
-  document.getElementById("ringNum").textContent="0:00";
   document.getElementById("ringSub").textContent="경과 시간";
-  const mb=document.getElementById("mainBtn");
-  mb.textContent="▶ 걷기 시작"; mb.className="big-btn timer-btn";
   cur="WALK";
+
+  const s=getSession();
+  lastSpokenMin = Math.floor(sessionElapsed(s)/60);
+  updateWalkRing();
+  const mb=document.getElementById("mainBtn");
+  const running = s && s.running;
+  mb.textContent = running ? "⏸ 일시정지" : (s ? "▶ 계속" : "▶ 걷기 시작");
+  mb.className="big-btn timer-btn";
+  if(running) startWalkTick();
+
   mb.onclick=()=>{
-    if(walkTimerId){ clearInterval(walkTimerId); walkTimerId=null; mb.textContent="▶ 계속"; speak("일시정지"); return; }
-    mb.textContent="⏸ 일시정지"; speak("시작");
-    walkTimerId=setInterval(()=>{
-      walkSec++;
-      const m=Math.floor(walkSec/60), s=walkSec%60;
-      document.getElementById("ringNum").textContent=m+":"+(s<10?"0":"")+s;
-      document.getElementById("ringFill").style.strokeDashoffset=628*(1-(walkSec%60)/60);
-      if(s===0 && m>0){ beep(620,0.08,"sine",0.08); speak(numKo(m)+"분"); }
-    },1000);
+    let cs=getSession();
+    if(cs && cs.running){
+      // 일시정지: 누적에 합산
+      cs.acc = sessionElapsed(cs); cs.running=false; cs.startedAt=null;
+      setSession(cs); clearInterval(walkTimerId); walkTimerId=null;
+      mb.textContent="▶ 계속"; speak("일시정지");
+    } else {
+      // 시작/재개
+      if(!cs) cs={acc:0,running:true,startedAt:Date.now()};
+      else { cs.running=true; cs.startedAt=Date.now(); }
+      setSession(cs); mb.textContent="⏸ 일시정지"; speak("시작");
+      startWalkTick();
+    }
   };
   document.getElementById("skipBtn").onclick=()=>{
+    const cs=getSession();
+    const addMin=Math.round(sessionElapsed(cs)/60);
     clearInterval(walkTimerId); walkTimerId=null;
-    const addMin=Math.round(walkSec/60);
+    setSession(null); // 세션 종료
     if(addMin>0){ walk.min+=addMin; saveWalk(walk); }
-    document.getElementById("skipBtn").textContent="완료 처리하고 닫기"; // 복구
+    document.getElementById("skipBtn").textContent="완료 처리하고 닫기";
     document.getElementById("skipBtn").onclick=skipDefault;
     closeOv(); render();
     if(addMin>0) setTimeout(()=>speak(numKo(addMin)+"분 걸었습니다"),300);
   };
   document.getElementById("overlay").classList.add("show");
 }
+
+function startWalkTick(){
+  clearInterval(walkTimerId);
+  walkTimerId=setInterval(updateWalkRing,1000);
+}
+
+// 백그라운드 갔다 돌아오면 즉시 갱신 (리셋 방지 핵심)
+document.addEventListener("visibilitychange",()=>{
+  if(!document.hidden && cur==="WALK"){ updateWalkRing(); const s=getSession(); if(s&&s.running) startWalkTick(); }
+});
 
 // skip 기본 동작 복구용
 function skipDefault(){
