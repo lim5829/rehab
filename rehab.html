@@ -166,6 +166,38 @@
     font-size:13px; font-weight:700; color:var(--ink-soft); cursor:pointer; transition: all .2s;
   }
   .mode-pill.active { background:var(--sky); color:#fff; border-color:var(--sky); }
+
+  .walk-card {
+    position:relative; z-index:1; background:linear-gradient(135deg,#eafaf3,#f1fff9);
+    border:1px solid #c5efdd; border-radius:20px; padding:16px; box-shadow:0 6px 18px -10px rgba(35,64,82,.15);
+  }
+  .walk-top { display:flex; align-items:center; gap:12px; }
+  .walk-ic { width:46px; height:46px; border-radius:14px; background:#d6f5e7; display:flex; align-items:center; justify-content:center; font-size:24px; }
+  .walk-info { flex:1; }
+  .walk-name { font-size:15.5px; font-weight:700; }
+  .walk-sub { font-size:11.5px; color:var(--ink-soft); margin-top:2px; }
+  .walk-mins { font-size:26px; font-weight:800; color:var(--mint); }
+  .walk-mins small { font-size:13px; font-weight:700; }
+  .walk-btns { display:flex; gap:7px; margin-top:14px; }
+  .walk-add, .walk-timer {
+    flex:1; padding:10px 4px; border-radius:12px; border:1.5px solid #bfe9d6; background:#fff;
+    font-size:13px; font-weight:700; color:#2fa882; cursor:pointer; transition:all .15s;
+  }
+  .walk-add:active { background:#d6f5e7; transform:scale(.96); }
+  .walk-timer { background:var(--mint); color:#fff; border-color:var(--mint); }
+  .walk-symp { margin-top:14px; padding-top:12px; border-top:1px dashed #c5efdd; }
+  .ws-label { font-size:12.5px; font-weight:700; color:var(--ink-soft); margin-bottom:8px; }
+  .ws-opts { display:flex; gap:7px; }
+  .ws-opt {
+    flex:1; padding:9px 4px; border-radius:12px; border:1.5px solid var(--line); background:#fff;
+    font-size:12.5px; font-weight:700; color:var(--ink-soft); cursor:pointer; transition:all .15s;
+  }
+  .ws-opt.sel-none { background:#d6f5e7; border-color:var(--mint); color:#2fa882; }
+  .ws-opt.sel-mid { background:#fff4d9; border-color:var(--sun); color:#c98a00; }
+  .ws-opt.sel-bad { background:#ffe2d9; border-color:var(--coral); color:#d2542f; }
+
+  .grp-head { font-size:12.5px; font-weight:800; letter-spacing:.5px; margin:6px 4px 2px; }
+  .grp-head:first-child { margin-top:0; }
 </style>
 </head>
 <body>
@@ -193,7 +225,35 @@
   </div>
 
   <div class="section-title">
-    오늘의 운동 <span class="pill" id="doneCount">0 / 10</span>
+    오늘의 걷기 <span class="pill" id="walkPill">기록 전</span>
+  </div>
+  <div class="walk-card" id="walkCard">
+    <div class="walk-top">
+      <div class="walk-ic">🚶</div>
+      <div class="walk-info">
+        <div class="walk-name">걷기 (뉴발 1080)</div>
+        <div class="walk-sub" id="walkSub">짧게 자주 · 평지 · 중립 자세</div>
+      </div>
+      <div class="walk-mins"><span id="walkTotal">0</span><small>분</small></div>
+    </div>
+    <div class="walk-btns">
+      <button class="walk-add" data-min="10">+10분</button>
+      <button class="walk-add" data-min="15">+15분</button>
+      <button class="walk-add" data-min="20">+20분</button>
+      <button class="walk-timer" id="walkTimerBtn">⏱ 타이머</button>
+    </div>
+    <div class="walk-symp" id="walkSymp">
+      <div class="ws-label">걷고 난 뒤 우측 증상은?</div>
+      <div class="ws-opts">
+        <button class="ws-opt" data-s="없음">없음 😊</button>
+        <button class="ws-opt" data-s="약간">약간 😐</button>
+        <button class="ws-opt" data-s="심함">심함 😣</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">
+    오늘의 운동 <span class="pill" id="doneCount">0 / 15</span>
   </div>
   <div class="list" id="list"></div>
 
@@ -262,6 +322,7 @@ const CATS = {
   warm:  { name: "준비",   color: "#3a9bd4", bg: "#e4f3fc" },
   stretch:{ name: "스트레칭", color: "#2fa882", bg: "#e1f7ef" },
   strength:{ name: "근력",   color: "#e07a4a", bg: "#fdeee6" },
+  posture:{ name: "자세",   color: "#8b6fd9", bg: "#efeafb" },
 };
 
 // type: 'rep' (count) | 'time' (seconds, per side or single)
@@ -306,6 +367,26 @@ const EX = [
     meta:"좌우 교대 6회 · 2세트",
     desc:"네발 기기 자세에서 반대쪽 팔과 다리를 몸통과 일직선이 될 때까지만 뻗습니다. 잠시 유지 후 돌아옵니다.",
     caution:"허리를 꺾어 들어올리지 않기 — 몸통과 일직선까지만. 골반 수평 유지." },
+  { id:"chintuck", icon:"🙇", name:"턱 당기기", cat:"posture", type:"rep", reps:10, sets:1, tempo:5,
+    meta:"5초 유지 · 10회",
+    desc:"정면을 보고, 턱을 뒤로 살짝 당겨 '이중턱'을 만들 듯 밀어줍니다. 고개를 숙이는 게 아니라 머리를 뒤로 미는 동작. 목 뒤가 늘어납니다. 거북목 교정의 핵심.",
+    caution:"고개를 숙이지 말고 수평으로 뒤로 밀기. 카페에서 틈틈이 하세요." },
+  { id:"wallangel", icon:"😇", name:"벽 천사", cat:"posture", type:"rep", reps:10, sets:2, tempo:4,
+    meta:"10회 · 2세트",
+    desc:"등·엉덩이·뒤통수를 벽에 붙이고, 팔을 W자로 벽에 댄 뒤 위로 천천히 올렸다 내립니다. 어깨가 뒤로 열립니다.",
+    caution:"허리가 벽에서 과하게 뜨지 않게 배 살짝 조이기(과신전 금지)." },
+  { id:"chest", icon:"🚪", name:"가슴 스트레칭", cat:"posture", type:"time", secs:25, sets:2, perSide:true,
+    meta:"25초 유지 · 좌우 2회",
+    desc:"문틀에 팔꿈치를 90도로 대고 몸을 앞으로 살짝 기울여 가슴 앞을 늘립니다. 굽은등·거북목의 원인인 가슴 단축을 풀어줍니다.",
+    caution:"허리 젖히지 말고 골반 중립. 가슴 앞만 늘어나게." },
+  { id:"neckside", icon:"🧎", name:"목 옆 스트레칭", cat:"posture", type:"time", secs:20, sets:2, perSide:true,
+    meta:"20초 유지 · 좌우 2회",
+    desc:"한 손으로 머리를 반대쪽으로 천천히 기울여 목 옆을 늘립니다(귀를 어깨 쪽으로). 거북목으로 굳은 목 측면을 풉니다.",
+    caution:"세게 당기지 말고 머리 무게 정도로만. 천천히." },
+  { id:"scapula", icon:"🔙", name:"어깨뼈 모으기", cat:"posture", type:"rep", reps:10, sets:1, tempo:5,
+    meta:"5초 유지 · 10회",
+    desc:"앉거나 서서 양 어깨뼈를 등 가운데로 모으듯 조입니다(가슴 펴기). 어깨가 앞으로 말리는 걸 잡아주는 등 상부 근육을 깨웁니다.",
+    caution:"어깨를 위로 으쓱하지 말고 뒤·아래로 모으기. 허리 젖히지 않기." },
 ];
 
 // ---- day / phase ----
@@ -329,6 +410,12 @@ function phaseInfo(d){
 const todayKey = () => "rehab-" + new Date().toLocaleDateString("en-CA",{timeZone:"Asia/Seoul"});
 function loadDone(){ try{ return JSON.parse(localStorage.getItem(todayKey())||"[]"); }catch(e){ return []; } }
 function saveDone(a){ try{ localStorage.setItem(todayKey(), JSON.stringify(a)); }catch(e){} }
+
+// ---- 걷기 데이터 ----
+const walkKey = () => "walk-" + new Date().toLocaleDateString("en-CA",{timeZone:"Asia/Seoul"});
+function loadWalk(){ try{ return JSON.parse(localStorage.getItem(walkKey())||'{"min":0,"symp":null}'); }catch(e){ return {min:0,symp:null}; } }
+function saveWalk(w){ try{ localStorage.setItem(walkKey(), JSON.stringify(w)); }catch(e){} }
+let walk = loadWalk();
 
 let done = loadDone();
 
@@ -390,10 +477,30 @@ function render(){
     done.length===EX.length ? "오늘 운동 완료 — 잘하셨어요 🌟" : (EX.length-done.length)+"개 남았어요";
   document.getElementById("doneCount").textContent = done.length+" / "+EX.length;
 
+  // 걷기 표시
+  document.getElementById("walkTotal").textContent = walk.min;
+  document.getElementById("walkPill").textContent = walk.min>0 ? walk.min+"분 걸음" : "기록 전";
+  document.querySelectorAll(".ws-opt").forEach(b=>{
+    b.classList.remove("sel-none","sel-mid","sel-bad");
+    if(walk.symp===b.dataset.s){
+      b.classList.add(b.dataset.s==="없음"?"sel-none":b.dataset.s==="약간"?"sel-mid":"sel-bad");
+    }
+  });
+
   const list = document.getElementById("list");
   list.innerHTML = "";
-  EX.forEach(ex=>{
+  const order=["warm","stretch","strength","posture"];
+  let lastCat=null;
+  EX.slice().sort((a,b)=>order.indexOf(a.cat)-order.indexOf(b.cat)).forEach(ex=>{
     const c = CATS[ex.cat];
+    if(ex.cat!==lastCat){
+      lastCat=ex.cat;
+      const h=document.createElement("div");
+      h.className="grp-head";
+      h.style.color=c.color;
+      h.textContent=c.name;
+      list.appendChild(h);
+    }
     const isDone = done.includes(ex.id);
     const el = document.createElement("div");
     el.className = "card"+(isDone?" done":"");
@@ -437,6 +544,9 @@ function openEx(ex){
   document.getElementById("celebrate").style.display="none";
   document.getElementById("ovFoot").style.display="block";
   document.getElementById("skipBtn").style.display="block";
+  document.getElementById("skipBtn").textContent="완료 처리하고 닫기";
+  document.getElementById("mainBtn").onclick=mainBtnDefault;
+  document.getElementById("skipBtn").onclick=skipDefault;
   resetSegUI();
   document.getElementById("overlay").classList.add("show");
 }
@@ -512,8 +622,8 @@ function autoTick(){
   document.getElementById("ringFill").style.strokeDashoffset=off;
 }
 
-document.getElementById("mainBtn").onclick=()=>{
-  if(!cur) return;
+function mainBtnDefault(){
+  if(!cur || cur==="WALK") return;
   if(cur.type==="rep"){
     if(autoMode){
       const b=document.getElementById("mainBtn");
@@ -556,7 +666,8 @@ document.getElementById("mainBtn").onclick=()=>{
       if(timeLeft<=0){ clearInterval(timerId); timerId=null; sndSet(); segDone(); }
     },1000);
   }
-};
+}
+document.getElementById("mainBtn").onclick=mainBtnDefault;
 
 function segDone(){
   autoPhase=0;
@@ -584,18 +695,88 @@ function finishEx(){
 function closeOv(){
   clearInterval(timerId); timerId=null;
   clearInterval(autoId); autoId=null; autoPhase=0;
+  if(typeof walkTimerId!=="undefined"){ clearInterval(walkTimerId); walkTimerId=null; }
   cur=null;
   document.getElementById("overlay").classList.remove("show");
 }
 document.getElementById("ovClose").onclick=closeOv;
-document.getElementById("skipBtn").onclick=()=>{
-  if(cur && !done.includes(cur.id)){ done.push(cur.id); saveDone(done); }
-  closeOv(); render();
-};
+document.getElementById("skipBtn").onclick=skipDefault;
 
 document.getElementById("resetBtn").onclick=()=>{
-  if(confirm("오늘 운동 기록을 초기화할까요?")){ done=[]; saveDone(done); render(); }
+  if(confirm("오늘 운동 기록을 초기화할까요?")){ done=[]; saveDone(done); walk={min:0,symp:null}; saveWalk(walk); render(); }
 };
+
+// ---- 걷기 이벤트 ----
+document.querySelectorAll(".walk-add").forEach(b=>{
+  b.onclick=()=>{
+    walk.min += parseInt(b.dataset.min,10);
+    saveWalk(walk); sndCount(); render();
+  };
+});
+document.querySelectorAll(".ws-opt").forEach(b=>{
+  b.onclick=()=>{
+    walk.symp = (walk.symp===b.dataset.s) ? null : b.dataset.s;
+    saveWalk(walk);
+    if(walk.symp==="심함") speak("무리했을 수 있어요. 오늘은 쉬세요");
+    render();
+  };
+});
+// 걷기 타이머: 오버레이를 걷기 전용으로 사용
+document.getElementById("walkTimerBtn").onclick=()=>{
+  openWalkTimer();
+};
+
+let walkTimerId=null, walkSec=0;
+function openWalkTimer(){
+  clearInterval(walkTimerId); walkSec=0;
+  document.getElementById("ovCat").textContent="걷기";
+  document.getElementById("ovCat").style.color="#2fa882";
+  document.getElementById("ovCat").style.background="#d6f5e7";
+  document.getElementById("ovName").textContent="걷기 타이머";
+  document.getElementById("ovDesc").textContent="평지에서 중립 자세로. 대화 가능한 속도. 우측 증상 생기면 멈추세요.";
+  document.getElementById("ovCaution").style.display="none";
+  document.getElementById("modeToggle").style.display="none";
+  document.getElementById("setDots").innerHTML="";
+  document.getElementById("ovInfo").style.display="block";
+  document.getElementById("ringWrap").style.display="flex";
+  document.getElementById("celebrate").style.display="none";
+  document.getElementById("ovFoot").style.display="block";
+  document.getElementById("skipBtn").style.display="block";
+  document.getElementById("skipBtn").textContent="기록하고 닫기";
+  document.getElementById("ringFill").style.strokeDashoffset=628;
+  document.getElementById("ringNum").textContent="0:00";
+  document.getElementById("ringSub").textContent="경과 시간";
+  const mb=document.getElementById("mainBtn");
+  mb.textContent="▶ 걷기 시작"; mb.className="big-btn timer-btn";
+  cur="WALK";
+  mb.onclick=()=>{
+    if(walkTimerId){ clearInterval(walkTimerId); walkTimerId=null; mb.textContent="▶ 계속"; speak("일시정지"); return; }
+    mb.textContent="⏸ 일시정지"; speak("시작");
+    walkTimerId=setInterval(()=>{
+      walkSec++;
+      const m=Math.floor(walkSec/60), s=walkSec%60;
+      document.getElementById("ringNum").textContent=m+":"+(s<10?"0":"")+s;
+      document.getElementById("ringFill").style.strokeDashoffset=628*(1-(walkSec%60)/60);
+      if(s===0 && m>0){ beep(620,0.08,"sine",0.08); speak(numKo(m)+"분"); }
+    },1000);
+  };
+  document.getElementById("skipBtn").onclick=()=>{
+    clearInterval(walkTimerId); walkTimerId=null;
+    const addMin=Math.round(walkSec/60);
+    if(addMin>0){ walk.min+=addMin; saveWalk(walk); }
+    document.getElementById("skipBtn").textContent="완료 처리하고 닫기"; // 복구
+    document.getElementById("skipBtn").onclick=skipDefault;
+    closeOv(); render();
+    if(addMin>0) setTimeout(()=>speak(numKo(addMin)+"분 걸었습니다"),300);
+  };
+  document.getElementById("overlay").classList.add("show");
+}
+
+// skip 기본 동작 복구용
+function skipDefault(){
+  if(cur && cur!=="WALK" && !done.includes(cur.id)){ done.push(cur.id); saveDone(done); }
+  closeOv(); render();
+}
 
 render();
 </script>
