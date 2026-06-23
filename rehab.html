@@ -167,6 +167,12 @@
   }
   .mode-pill.active { background:var(--sky); color:#fff; border-color:var(--sky); }
 
+  .spd-pill {
+    flex:1; padding:9px; border-radius:13px; border:1.5px solid var(--line); background:#fff;
+    font-size:12.5px; font-weight:700; color:var(--ink-soft); cursor:pointer; transition: all .2s;
+  }
+  .spd-pill.active { background:var(--mint); color:#fff; border-color:var(--mint); }
+
   .walk-card {
     position:relative; z-index:1; background:linear-gradient(135deg,#eafaf3,#f1fff9);
     border:1px solid #c5efdd; border-radius:20px; padding:16px; box-shadow:0 6px 18px -10px rgba(35,64,82,.15);
@@ -308,6 +314,11 @@
       <button class="mode-pill active" id="modeAuto">🔄 자동 카운트</button>
       <button class="mode-pill" id="modeManual">👆 직접 탭</button>
     </div>
+    <div id="speedToggle" style="display:flex;gap:8px;margin-bottom:10px;">
+      <button class="spd-pill" data-spd="1.35">🐢 느리게</button>
+      <button class="spd-pill active" data-spd="1">🚶 보통</button>
+      <button class="spd-pill" data-spd="0.75">🐇 빠르게</button>
+    </div>
     <button class="big-btn tap-btn" id="mainBtn">시작</button>
     <button class="big-btn ghost-btn" id="skipBtn">완료 처리하고 닫기</button>
   </div>
@@ -347,23 +358,23 @@ const EX = [
     meta:"25초 유지 · 좌우 2회",
     desc:"누워서 한쪽 발목을 반대쪽 무릎 위에 올려 figure-4를 만들고, 아래쪽 허벅지를 손으로 당깁니다. 엉덩이 깊은 곳이 늘어납니다.",
     caution:"" },
-  { id:"clam", icon:"🐚", name:"클램쉘", cat:"strength", type:"rep", reps:10, sets:2, perSide:true, tempo:3,
+  { id:"clam", icon:"🐚", name:"클램쉘", cat:"strength", type:"rep", reps:10, sets:2, perSide:true, tempo:5,
     meta:"10회 · 2세트 · 좌우",
     desc:"옆으로 누워 무릎을 굽힙니다. 두 발을 붙인 채 위쪽 무릎만 벌렸다 모읍니다. 골반이 뒤로 넘어가지 않게 합니다.",
     caution:"골반이 뒤로 구르지 않게 고정 — 둔근(엉덩이)에 힘이 들어가는 걸 느끼세요." },
-  { id:"dead", icon:"🐞", name:"데드버그", cat:"strength", type:"rep", reps:8, sets:2, tempo:3,
+  { id:"dead", icon:"🐞", name:"데드버그", cat:"strength", type:"rep", reps:8, sets:2, tempo:6,
     meta:"좌우 교대 8회 · 2세트",
     desc:"누워서 팔과 무릎을 90도로 듭니다. 반대쪽 팔·다리를 천천히 뻗었다가 돌아옵니다. 허리가 바닥에서 뜨지 않게 합니다.",
     caution:"허리가 바닥에서 들리면 멈추세요. 허리-바닥 밀착이 핵심." },
-  { id:"sidelift", icon:"🦩", name:"옆으로 누워 다리 올리기", cat:"strength", type:"rep", reps:10, sets:2, perSide:true, tempo:3,
+  { id:"sidelift", icon:"🦩", name:"옆으로 누워 다리 올리기", cat:"strength", type:"rep", reps:10, sets:2, perSide:true, tempo:5,
     meta:"10회 · 2세트 · 좌우",
     desc:"옆으로 누워 위쪽 다리를 곧게 편 채 올렸다 내립니다. 30~45도까지만, 골반이 흔들리지 않게 합니다.",
     caution:"다리를 너무 높이 올리지 않기 — 골반 안정 유지." },
-  { id:"bridge", icon:"🌉", name:"브릿지", cat:"strength", type:"rep", reps:6, sets:2, tempo:5,
+  { id:"bridge", icon:"🌉", name:"브릿지", cat:"strength", type:"rep", reps:6, sets:2, tempo:6,
     meta:"6회 · 2세트 · 2~3초 유지",
     desc:"누워서 무릎을 굽힙니다. 둔근을 먼저 조인 뒤, 그 힘으로 골반을 들어 어깨-골반-무릎이 일직선이 되게 합니다. 2~3초 유지 후 천천히 내립니다.",
     caution:"일직선까지만! 그 이상 허리를 꺾지 마세요(과신전 금지). 허리가 아닌 둔근으로 들기." },
-  { id:"bird", icon:"🐦", name:"버드독", cat:"strength", type:"rep", reps:6, sets:2, tempo:5,
+  { id:"bird", icon:"🐦", name:"버드독", cat:"strength", type:"rep", reps:6, sets:2, tempo:6,
     meta:"좌우 교대 6회 · 2세트",
     desc:"네발 기기 자세에서 반대쪽 팔과 다리를 몸통과 일직선이 될 때까지만 뻗습니다. 잠시 유지 후 돌아옵니다.",
     caution:"허리를 꺾어 들어올리지 않기 — 몸통과 일직선까지만. 골반 수평 유지." },
@@ -371,7 +382,7 @@ const EX = [
     meta:"5초 유지 · 10회",
     desc:"정면을 보고, 턱을 뒤로 살짝 당겨 '이중턱'을 만들 듯 밀어줍니다. 고개를 숙이는 게 아니라 머리를 뒤로 미는 동작. 목 뒤가 늘어납니다. 거북목 교정의 핵심.",
     caution:"고개를 숙이지 말고 수평으로 뒤로 밀기. 카페에서 틈틈이 하세요." },
-  { id:"wallangel", icon:"😇", name:"벽 천사", cat:"posture", type:"rep", reps:10, sets:2, tempo:4,
+  { id:"wallangel", icon:"😇", name:"벽 천사", cat:"posture", type:"rep", reps:10, sets:2, tempo:5,
     meta:"10회 · 2세트",
     desc:"등·엉덩이·뒤통수를 벽에 붙이고, 팔을 W자로 벽에 댄 뒤 위로 천천히 올렸다 내립니다. 어깨가 뒤로 열립니다.",
     caution:"허리가 벽에서 과하게 뜨지 않게 배 살짝 조이기(과신전 금지)." },
@@ -455,10 +466,11 @@ function speak(text){
   }catch(e){}
 }
 const KNUM=["","하나","둘","셋","넷","다섯","여섯","일곱","여덟","아홉","열","열하나","열둘","열셋","열넷","열다섯"];
-function speakCount(n){ speak(KNUM[n] || (n+"회")); }
+const SINO=["","일","이","삼","사","오","육","칠","팔","구","십","십일","십이","십삼","십사","십오"];
+function speakCount(n){ speak(SINO[n] || numKo(n)); }
 // 카운트다운용: 남은 초를 한국어로 (10 이하는 고유어, 그 위는 한자어 "이십오")
 function numKo(n){
-  if(n<=10) return KNUM[n] || String(n);
+  if(n<=15) return SINO[n] || String(n);
   const sino=["영","일","이","삼","사","오","육","칠","팔","구"];
   const tens=["","십","이십","삼십","사십","오십","육십"];
   const t=Math.floor(n/10), o=n%10;
@@ -526,6 +538,7 @@ function render(){
 // ---- overlay logic ----
 let cur=null, curSet=0, repCount=0, timerId=null, timeLeft=0, totalSegs=0;
 let autoMode=true, autoId=null, autoPhase=0;
+let speedMult = (function(){ try{ return parseFloat(localStorage.getItem("rehab-speed")||"1"); }catch(e){ return 1; } })();
 
 function openEx(ex){
   cur=ex; curSet=0; repCount=0;
@@ -543,8 +556,10 @@ function openEx(ex){
   // total segments = sets * (perSide?2:1)
   totalSegs = ex.sets * (ex.perSide?2:1);
   buildDots();
-  // 모드 토글: 반복 운동에만 표시
+  // 모드 토글 + 속도 토글: 반복 운동에만 표시
   document.getElementById("modeToggle").style.display = (ex.type==="rep") ? "flex" : "none";
+  document.getElementById("speedToggle").style.display = (ex.type==="rep") ? "flex" : "none";
+  paintSpeed();
   document.getElementById("ovInfo").style.display="block";
   document.getElementById("ringWrap").style.display="flex";
   document.getElementById("celebrate").style.display="none";
@@ -566,6 +581,22 @@ function setMode(m){
 }
 document.getElementById("modeAuto").onclick=()=>setMode(true);
 document.getElementById("modeManual").onclick=()=>setMode(false);
+
+function paintSpeed(){
+  document.querySelectorAll(".spd-pill").forEach(b=>{
+    b.classList.toggle("active", parseFloat(b.dataset.spd)===speedMult);
+  });
+}
+document.querySelectorAll(".spd-pill").forEach(b=>{
+  b.onclick=()=>{
+    speedMult = parseFloat(b.dataset.spd);
+    try{ localStorage.setItem("rehab-speed", String(speedMult)); }catch(e){}
+    paintSpeed();
+    // 진행 중이면 안내
+    const label = speedMult>1?"느리게":speedMult<1?"빠르게":"보통";
+    speak(label);
+  };
+});
 
 function buildDots(){
   const dots=document.getElementById("setDots"); dots.innerHTML="";
@@ -605,7 +636,7 @@ function resetSegUI(){
 
 function autoTick(){
   // 한 회를 tempo초에 걸쳐 링을 채우고, 끝에 카운트
-  const tempo = cur.tempo || 3;
+  const tempo = (cur.tempo || 3) * speedMult;
   const stepMs = 50;
   const incPerStep = 1/(tempo*1000/stepMs);
   autoPhase += incPerStep;
@@ -766,6 +797,7 @@ function openWalkTimer(){
   document.getElementById("ovDesc").textContent="평지에서 중립 자세로. 대화 가능한 속도. 우측 증상 생기면 멈추세요.";
   document.getElementById("ovCaution").style.display="none";
   document.getElementById("modeToggle").style.display="none";
+  document.getElementById("speedToggle").style.display="none";
   document.getElementById("setDots").innerHTML="";
   document.getElementById("ovInfo").style.display="block";
   document.getElementById("ringWrap").style.display="flex";
